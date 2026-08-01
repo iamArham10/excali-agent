@@ -10,9 +10,15 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
+import { CloudflareBareAgent } from './CloudflareBareAgent';
+export { CloudflareBareAgent };
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response("Hello World!");
+		const id = env.CLOUDFLARE_BARE_AGENT.idFromName('default');
+
+		const stub = env.CLOUDFLARE_BARE_AGENT.get(id);
+
+		return stub.fetch(request, env, ctx);
 	},
 } satisfies ExportedHandler<Env>;
