@@ -10,15 +10,12 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-import { CloudflareBareAgent } from './CloudflareBareAgent';
-export { CloudflareBareAgent };
+import { routeAgentRequest } from 'agents';
+import { CloudflareAgentWithSdk } from './CloudflareAgentWithSdk';
+export { CloudflareAgentWithSdk };
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const id = env.CLOUDFLARE_BARE_AGENT.idFromName('default');
-
-		const stub = env.CLOUDFLARE_BARE_AGENT.get(id);
-
-		return stub.fetch(request, env, ctx);
+		return (await routeAgentRequest(request, env)) ?? new Response('Not found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;

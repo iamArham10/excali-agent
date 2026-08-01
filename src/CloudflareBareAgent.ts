@@ -21,7 +21,7 @@ export class CloudflareBareAgent extends DurableObject {
 
 		history.push({
 			role: 'assistant',
-			content: result.response,
+			content: result.response ?? 'no response',
 		});
 
 		await this.ctx.storage.put('history', history);

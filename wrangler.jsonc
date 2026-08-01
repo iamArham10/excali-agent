@@ -51,9 +51,16 @@
 	"durable_objects": {
 		"bindings": [
 			{
-				"name": "CLOUDFLARE_BARE_AGENT",
-				"class_name": "CloudflareBareAgent",
+				"name": "CLOUDFLARE_AGENT_WITH_SDK",
+				"class_name": "CloudflareAgentWithSdk",
 			},
 		],
+	},
+
+	"exports": {
+		"CloudflareAgentWithSdk": {
+			"type": "durable-object",
+			"storage": "sqlite",
+		},
 	},
 }
