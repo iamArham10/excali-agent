@@ -17,6 +17,9 @@
     "wrangler": "^4.118.0"
   },
   "dependencies": {
-    "agents": "^0.20.1"
+    "@cloudflare/ai-chat": "^0.10.1",
+    "agents": "^0.20.1",
+    "ai": "^7.0.47",
+    "workers-ai-provider": "^4.0.0"
   }
 }

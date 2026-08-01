@@ -11,8 +11,8 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 import { routeAgentRequest } from 'agents';
-import { CloudflareAgentWithSdk } from './CloudflareAgentWithSdk';
-export { CloudflareAgentWithSdk };
+import { ExcaliAgent } from './ExcaliAgent';
+export { ExcaliAgent };
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {

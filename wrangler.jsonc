@@ -51,14 +51,14 @@
 	"durable_objects": {
 		"bindings": [
 			{
-				"name": "CLOUDFLARE_AGENT_WITH_SDK",
-				"class_name": "CloudflareAgentWithSdk",
+				"name": "EXCALI_AGENT",
+				"class_name": "ExcaliAgent",
 			},
 		],
 	},
 
 	"exports": {
-		"CloudflareAgentWithSdk": {
+		"ExcaliAgent": {
 			"type": "durable-object",
 			"storage": "sqlite",
 		},
