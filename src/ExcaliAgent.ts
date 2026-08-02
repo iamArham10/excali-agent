@@ -1,6 +1,7 @@
 import { Agent, WSMessage, type Connection } from 'agents';
 import { generateText, streamText } from 'ai';
 import { createWorkersAI } from 'workers-ai-provider';
+import { tools } from './tools';
 
 type Message = {
 	role: 'user' | 'assistant';
@@ -19,8 +20,9 @@ export class ExcaliAgent extends Agent<Env> {
 		history.push({ role: 'user', content: message.toString() });
 
 		const provider = createWorkersAI({ binding: this.env.AI });
-		const model = provider('@cf/meta/llama-3.2-3b-instruct');
-		const result = streamText({ model, messages: history });
+		const model = provider('@cf/ibm-granite/granite-4.0-h-micro');
+
+		const result = streamText({ model, messages: history, tools });
 
 		let aiResponse = '';
 		for await (const chunk of result.textStream) {
