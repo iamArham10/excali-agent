@@ -1,4 +1,4 @@
-import { Agent } from 'agents';
+import { Agent, WSMessage, type Connection } from 'agents';
 import { generateText, streamText } from 'ai';
 import { createWorkersAI } from 'workers-ai-provider';
 
@@ -8,55 +8,35 @@ type Message = {
 };
 
 export class ExcaliAgent extends Agent<Env> {
-	async fetch(request: Request): Promise<Response> {
-		// check for WebSocket upgrade
-		const upgrade = request.headers.get('Upgrade');
-		if (upgrade !== 'websocket') {
-			return new Response('Expected WebSocket upgrade', { status: 426 });
+	async onConnect(connection: Connection) {
+		connection.send('WebSocket connection established');
+	}
+
+	async onMessage(connection: Connection, message: WSMessage) {
+		console.log('got:', message.toString());
+
+		const history = (await this.ctx.storage.get<Message[]>('history')) ?? [];
+		history.push({ role: 'user', content: message.toString() });
+
+		const provider = createWorkersAI({ binding: this.env.AI });
+		const model = provider('@cf/meta/llama-3.2-3b-instruct');
+		const result = streamText({ model, messages: history });
+
+		let aiResponse = '';
+		for await (const chunk of result.textStream) {
+			connection.send(chunk);
+			aiResponse += chunk;
 		}
 
-		// create a websocket pair
-		const [client, server] = Object.values(new WebSocketPair());
-		server.accept();
+		history.push({ role: 'assistant', content: aiResponse });
+		await this.ctx.storage.put('history', history);
+	}
 
-		// listen for messages from the client
-		server.addEventListener('message', async (event) => {
-			const userMessage = event.data.toString();
+	async onClose(connection: Connection, code: number, reason: string) {
+		console.log('closed:', code, reason);
+	}
 
-			// load history
-			const history = (await this.ctx.storage.get<Message[]>('history')) ?? [];
-
-			// add user message to history
-			history.push({ role: 'user', content: userMessage });
-			const provider = createWorkersAI({
-				binding: this.env.AI,
-			});
-
-			const model = provider('@cf/meta/llama-3.2-3b-instruct');
-			const result = streamText({ model: model, messages: history });
-
-			let answer = '';
-			for await (const chunk of result.textStream) {
-				answer += chunk;
-				server.send(chunk);
-			}
-
-			history.push({
-				role: 'assistant',
-				content: answer,
-			});
-
-			await this.ctx.storage.put('history', history);
-		});
-
-		// close the server
-		server.addEventListener('close', () => {
-			client.close();
-		});
-
-		return new Response(null, {
-			status: 101,
-			webSocket: client,
-		});
+	async onError(connection: unknown, error?: unknown): Promise<void> {
+		console.log('error', error ?? 'no info');
 	}
 }

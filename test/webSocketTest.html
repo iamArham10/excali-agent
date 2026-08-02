@@ -13,7 +13,7 @@
 			// adding width so content goes downward after a long message
 			output.style.width = '100%';
 
-			const ws = new WebSocket('ws://localhost:8788/agents/excali-agent/default');
+			const ws = new WebSocket('ws://localhost:8787/agents/excali-agent/default');
 			let result = '';
 
 			ws.onopen = () => {
