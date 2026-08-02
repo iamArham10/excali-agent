@@ -1,5 +1,5 @@
 import { Agent } from 'agents';
-import { generateText } from 'ai';
+import { generateText, streamText } from 'ai';
 import { createWorkersAI } from 'workers-ai-provider';
 
 type Message = {
@@ -23,10 +23,16 @@ export class ExcaliAgent extends Agent<Env> {
 
 		// generate response
 		const model = provider('@cf/meta/llama-3.2-3b-instruct');
-		const result = (await generateText({ model: model, messages: history })).text ?? 'no response';
+		const result = streamText({ model: model, messages: history });
+
+		let answer = '';
+		for await (const chunk of result.textStream) {
+			answer += chunk;
+			console.log(chunk);
+		}
 
 		// add assistant message to history
-		history.push({ role: 'assistant', content: result });
+		history.push({ role: 'assistant', content: answer });
 
 		// save history
 		await this.ctx.storage.put('history', history);
