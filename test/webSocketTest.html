@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+	<head>
+		<title>WebSocket Test</title>
+	</head>
+	<body>
+		<input type="text" id="message" />
+		<button id="send">Send</button>
+		<pre id="output"></pre>
+
+		<script>
+			const output = document.getElementById('output');
+			// adding width so content goes downward after a long message
+			output.style.width = '100%';
+
+			const ws = new WebSocket('ws://localhost:8788/agents/excali-agent/default');
+			let result = '';
+
+			ws.onopen = () => {
+				output.textContent = 'Connected';
+			};
+
+			ws.onmessage = (event) => {
+				result += event.data;
+				output.textContent = result;
+			};
+
+			const sendButton = document.getElementById('send');
+			sendButton.addEventListener('click', () => {
+				result = '';
+
+				const message = document.getElementById('message').value;
+				ws.send(message);
+			});
+		</script>
+	</body>
+</html>
