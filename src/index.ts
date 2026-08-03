@@ -14,8 +14,12 @@ import { routeAgentRequest } from 'agents';
 import { ExcaliAgent } from './ExcaliAgent';
 export { ExcaliAgent };
 
+interface Env {
+	GROQ_API_KEY: string;
+}
+
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
+	async fetch(request, env: Env, ctx): Promise<Response> {
 		return (await routeAgentRequest(request, env)) ?? new Response('Not found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;

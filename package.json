@@ -18,6 +18,7 @@
 		"wrangler": "^4.118.0"
 	},
 	"dependencies": {
+		"@ai-sdk/groq": "^4.0.19",
 		"@cloudflare/ai-chat": "^0.10.1",
 		"agents": "^0.20.1",
 		"ai": "^7.0.47",
