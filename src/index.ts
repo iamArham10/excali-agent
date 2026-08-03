@@ -16,6 +16,7 @@ export { ExcaliAgent };
 
 interface Env {
 	GROQ_API_KEY: string;
+	AI_GATEWAY_API_KEY: string;
 }
 
 export default {

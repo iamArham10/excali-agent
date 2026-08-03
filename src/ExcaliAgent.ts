@@ -6,9 +6,8 @@ import {
 	createUIMessageStreamResponse,
 	toUIMessageStream,
 	stepCountIs,
+	createGateway,
 } from 'ai';
-import { createWorkersAI } from 'workers-ai-provider';
-import { createGroq } from '@ai-sdk/groq';
 import { tools } from './tools';
 
 const SYSTEM_PROMPT = `You are a diagram design assistant. You help users create and modify diagrams on an Excalidraw canvas.
@@ -29,10 +28,10 @@ When the user asks to modify an element, use the modifyDiagram tool with the ele
 
 export class ExcaliAgent extends AIChatAgent<Env> {
 	async onChatMessage() {
-		const groq = createGroq({ apiKey: this.env.GROQ_API_KEY });
+		const gateway = createGateway({ apiKey: this.env.AI_GATEWAY_API_KEY });
 
 		const result = streamText({
-			model: groq('llama-3.3-70b-versatile'),
+			model: gateway('llama-3.3-70b-versatile'),
 			instructions: SYSTEM_PROMPT,
 			messages: await convertToModelMessages(this.messages),
 			tools,
