@@ -8,12 +8,10 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-08-01",
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
 	"upload_source_maps": true,
-	"compatibility_flags": [
-		"nodejs_compat"
-	]
+	"compatibility_flags": ["nodejs_compat"],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -42,4 +40,27 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
 	 */
 	// "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
+	/**
+	 * AI Bindings
+	 * https://developers.cloudflare.com/workers/wrangler/configuration/#ai-bindings
+	 */
+	"ai": {
+		"binding": "AI",
+	},
+
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "EXCALI_AGENT",
+				"class_name": "ExcaliAgent",
+			},
+		],
+	},
+
+	"exports": {
+		"ExcaliAgent": {
+			"type": "durable-object",
+			"storage": "sqlite",
+		},
+	},
 }
