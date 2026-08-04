@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4 Preflight resets many element defaults (e.g. svg/img display,
+ * max-width, button styling) that conflict with Excalidraw's internal CSS.
+ * Scope these overrides to .excalidraw so they don't leak.
+ */
+.excalidraw svg,
+.excalidraw img {
+  display: unset;
+  max-width: unset;
+  max-height: unset;
+}
+
+.excalidraw button {
+  background-color: unset;
+  cursor: unset;
+}
+
+.excalidraw a {
+  color: unset;
+  text-decoration: unset;
+}
+
+.excalidraw ul,
+.excalidraw ol {
+  list-style: unset;
+  margin: unset;
+  padding: unset;
+}
