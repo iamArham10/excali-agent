@@ -1,27 +1,40 @@
 {
-	"name": "excalidraw-agent",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev",
-		"start": "wrangler dev",
-		"agent": "node test/webSocketTest.mjs",
-		"test": "vitest",
-		"cf-typegen": "wrangler types"
-	},
-	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.12.4",
-		"@types/node": "^26.1.2",
-		"typescript": "^5.5.2",
-		"vitest": "~3.2.0",
-		"wrangler": "^4.118.0"
-	},
-	"dependencies": {
-		"@ai-sdk/groq": "^4.0.19",
-		"@cloudflare/ai-chat": "^0.10.1",
-		"agents": "^0.20.1",
-		"ai": "^7.0.47",
-		"workers-ai-provider": "^4.0.0"
-	}
+    "name": "excali-agent",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "vite build",
+        "preview": "npm run build && vite preview",
+        "deploy": "npm run build && wrangler deploy"
+    },
+    "devDependencies": {
+        "@cloudflare/vite-plugin": "^1.50.0",
+        "@cloudflare/workers-types": "^5.20260804.1",
+        "@types/node": "^26.1.2",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.4",
+        "@vitejs/plugin-react": "^6.0.5",
+        "typescript": "^7.0.2",
+        "vite": "^8.2.0",
+        "wrangler": "^4.118.0"
+    },
+    "allowScripts": {
+        "esbuild@0.28.1": true,
+        "workerd@1.20260730.1": true,
+        "core-js-pure@3.49.0": true
+    },
+    "dependencies": {
+        "@ai-sdk/gateway": "^4.0.40",
+        "@cloudflare/ai-chat": "^0.10.1",
+        "@excalidraw/excalidraw": "^0.18.1",
+        "@tailwindcss/vite": "^4.3.3",
+        "agents": "^0.20.1",
+        "ai": "^7.0.51",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "tailwindcss": "^4.3.3",
+        "zod": "^4.4.3"
+    }
 }
