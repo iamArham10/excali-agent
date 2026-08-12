@@ -6,15 +6,18 @@ import {
     streamText,
     toUIMessageStream,
 } from "ai";
+import { tools } from "./tools";
+import { groq } from "@ai-sdk/groq";
 
 export class ExcaliAgent extends AIChatAgent<Env> {
+    maxPersistedMessages: number | undefined = 5;
     async onChatMessage(): Promise<Response | undefined> {
-        const provider = createGateway({ apiKey: this.env.AI_GATEWAY_API_KEY });
-
         const result = streamText({
-            model: provider("openai/gpt-4o-mini"),
-            instructions: "",
+            model: groq("openai/gpt-oss-120b"),
+            instructions:
+                "You are a conversationalist agent, only use the tools when necessary",
             messages: await convertToModelMessages(this.messages),
+            tools: tools,
         });
 
         return createUIMessageStreamResponse({

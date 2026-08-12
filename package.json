@@ -11,7 +11,6 @@
     },
     "devDependencies": {
         "@cloudflare/vite-plugin": "^1.50.0",
-        "@cloudflare/workers-types": "^5.20260804.1",
         "@types/node": "^26.1.2",
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.4",
@@ -27,6 +26,7 @@
     },
     "dependencies": {
         "@ai-sdk/gateway": "^4.0.40",
+        "@ai-sdk/groq": "^4.0.28",
         "@cloudflare/ai-chat": "^0.10.1",
         "@excalidraw/excalidraw": "^0.18.1",
         "@tailwindcss/vite": "^4.3.3",
@@ -34,6 +34,9 @@
         "ai": "^7.0.51",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
+        "react-markdown": "^10.1.0",
+        "rehype-highlight": "^7.0.2",
+        "remark-gfm": "^4.0.1",
         "tailwindcss": "^4.3.3",
         "zod": "^4.4.3"
     }

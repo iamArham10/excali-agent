@@ -36,3 +36,6 @@ dist-ssr
 
 # TypeScript
 *.tsbuildinfo
+
+# Agent
+AGENTS.md
