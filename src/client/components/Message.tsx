@@ -7,7 +7,9 @@ type MessageProps = {
 
 export default function Message({ message }: MessageProps) {
     const isUser = message.role === "user";
-    const hasText = message.parts.some((p)  => p.type === "text" && p.text.trim().length > 0)
+    const hasText = message.parts.some(
+        (p) => p.type === "text" && p.text.trim().length > 0,
+    );
     return (
         <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
             <div
@@ -15,10 +17,17 @@ export default function Message({ message }: MessageProps) {
             >
                 {message.parts.map((part, index) => {
                     if (part.type === "text") {
-                        return <MarkdownRenderer key={index} content={part.text}/>
+                        return (
+                            <MarkdownRenderer key={index} content={part.text} />
+                        );
                     } else if (part.type === "reasoning") {
                         if (hasText) return null;
-                        return <ThinkingDots/>
+                        return (
+                            <div className="flex flex-col gap-0.5">
+                                <em className="text-blue-400">{part.text}</em>
+                                <ThinkingDots />
+                            </div>
+                        );
                     }
                 })}
             </div>
