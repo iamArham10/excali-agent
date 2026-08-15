@@ -23,7 +23,7 @@ export default function Message({ message }: MessageProps) {
                     } else if (part.type === "reasoning") {
                         if (hasText) return null;
                         return (
-                            <div className="flex flex-col gap-0.5">
+                            <div key={index} className="flex flex-col gap-0.5">
                                 <em className="text-blue-400">{part.text}</em>
                                 <ThinkingDots />
                             </div>
