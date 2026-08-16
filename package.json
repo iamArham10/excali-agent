@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "@ai-sdk/gateway": "^4.0.40",
+        "@ai-sdk/google": "^4.0.44",
         "@ai-sdk/groq": "^4.0.28",
         "@cloudflare/ai-chat": "^0.10.1",
         "@excalidraw/excalidraw": "^0.18.1",
