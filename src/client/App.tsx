@@ -5,7 +5,7 @@ import {
     Excalidraw,
 } from "@excalidraw/excalidraw";
 import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { useAgentChat } from "@cloudflare/ai-chat/react";
+import { getToolCallId, useAgentChat } from "@cloudflare/ai-chat/react";
 import { useAgent } from "agents/react";
 import { useEffect, useRef, useState } from "react";
 import { ChatInput } from "./components/ChatInput";
@@ -23,6 +23,7 @@ export default function App() {
     const [excalidrawAPI, setExcaliDrawAPI] =
         useState<ExcalidrawImperativeAPI | null>(null);
     const [input, setInput] = useState("");
+    const alreadyExecuted = useRef<Set<string>>(new Set());
 
     useEffect(() => {
         clearHistory();
@@ -37,6 +38,10 @@ export default function App() {
                 if (!isToolUIPart(part)) continue;
                 if (part.state !== "output-available") continue;
                 const toolName = getToolName(part);
+                const toolId = getToolCallId(part);
+                if (alreadyExecuted.current.has(toolId)) continue;
+
+                alreadyExecuted.current.add(toolId);
                 if (toolName === "drawElements") {
                     const output = part.output as {
                         elements: ExcalidrawElementSkeleton[];

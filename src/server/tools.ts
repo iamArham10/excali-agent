@@ -1,7 +1,11 @@
 import z from "zod";
 import { tool } from "ai";
 
-import { drawShapeElementSchema, drawTextElementSchema } from "./excali-schema";
+import {
+    drawArrowElementSchema,
+    drawShapeElementSchema,
+    drawTextElementSchema,
+} from "./excali-schema";
 
 const drawElements = tool({
     description:
@@ -14,6 +18,7 @@ const drawElements = tool({
                 z.discriminatedUnion("type", [
                     drawShapeElementSchema,
                     drawTextElementSchema,
+                    drawArrowElementSchema,
                 ]),
             )
             .min(1)
