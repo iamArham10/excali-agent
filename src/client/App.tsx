@@ -16,51 +16,28 @@ import { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform
 const sessionId = crypto.randomUUID();
 
 export default function App() {
-    const agent = useAgent({
-        agent: "ExcaliAgent",
-        name: sessionId,
-    });
-
+    const agent = useAgent({ agent: "ExcaliAgent", name: sessionId });
     const { messages, sendMessage, status, clearHistory } = useAgentChat({
         agent,
     });
-
-    const [input, setInput] = useState("");
-    const [excalidrawAPI, setExcalidrawAPI] =
+    const [excalidrawAPI, setExcaliDrawAPI] =
         useState<ExcalidrawImperativeAPI | null>(null);
-    const [theme, setTheme] = useState<"light" | "dark">("light");
-    const drawnToolsId = useRef<Set<string>>(new Set());
-
-    const handleExcaliApi = (api: ExcalidrawImperativeAPI) => {
-        setExcalidrawAPI(api);
-    };
+    const [input, setInput] = useState("");
 
     useEffect(() => {
         clearHistory();
     }, []);
 
     useEffect(() => {
-        if (!excalidrawAPI) {
-            return;
-        }
+        if (!excalidrawAPI) return;
 
         for (const message of messages) {
-            if (message.role !== "assistant") {
-                continue;
-            }
-
+            if (message.role !== "assistant") continue;
             for (const part of message.parts) {
-                if (!isToolUIPart(part)) {
-                    continue;
-                }
-
-                const toolName = getToolName(part);
+                if (!isToolUIPart(part)) continue;
                 if (part.state !== "output-available") continue;
-                if (drawnToolsId.current.has(part.toolCallId)) continue;
-
-                drawnToolsId.current.add(part.toolCallId);
-
-                if (toolName === "generateDiagram") {
+                const toolName = getToolName(part);
+                if (toolName === "drawElements") {
                     const output = part.output as {
                         elements: ExcalidrawElementSkeleton[];
                     };
@@ -68,28 +45,12 @@ export default function App() {
                         output.elements,
                         { regenerateIds: false },
                     );
-                    excalidrawAPI.updateScene({ elements });
+                    excalidrawAPI.updateScene({
+                        elements,
+                    });
                     excalidrawAPI.scrollToContent(elements, {
                         fitToContent: true,
                     });
-                } else if (toolName === "modifyDiagram") {
-                    const { elementId, updates } = part.output as {
-                        elementId: string;
-                        updates: Record<string, unknown>;
-                    };
-                    const elements = excalidrawAPI
-                        .getSceneElements()
-                        .map((el) =>
-                            el.id === elementId
-                                ? {
-                                      ...el,
-                                      ...updates,
-                                      version: el.version + 1,
-                                      versionNonce: el.versionNonce + 1,
-                                  }
-                                : el,
-                        );
-                    excalidrawAPI.updateScene({ elements });
                 }
             }
         }
@@ -98,7 +59,7 @@ export default function App() {
     return (
         <div className="flex h-screen">
             <div className="w-4/5 h-screen">
-                <Excalidraw excalidrawAPI={handleExcaliApi} theme={theme} />
+                <Excalidraw excalidrawAPI={(api) => setExcaliDrawAPI(api)} />
             </div>
             <div className="w-2/5 flex flex-col m-5 rounded-2xl bg-white shadow-xl">
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
