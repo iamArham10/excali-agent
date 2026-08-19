@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-const label = z.strictObject({
+const label = z.object({
     text: z.string().describe("text of the label"),
 });
 
-const drawShapeElementSchema = z.strictObject({
+const drawShapeElementSchema = z.object({
     id: z
         .string()
         .describe(
@@ -20,7 +20,7 @@ const drawShapeElementSchema = z.strictObject({
     label: label.optional().describe("label to attach to the shape"),
 });
 
-const drawTextElementSchema = z.strictObject({
+const drawTextElementSchema = z.object({
     type: z.literal("text"),
     id: z
         .string()
@@ -43,7 +43,7 @@ const pointSchema = z
             "For a straight line, provide exactly two points such as [[0, 0], [200, 0]].",
     );
 
-const drawArrowElementSchema = z.strictObject({
+const drawArrowElementSchema = z.object({
     type: z.literal("arrow"),
     id: z
         .string()
@@ -61,7 +61,7 @@ const drawArrowElementSchema = z.strictObject({
         .enum(["circle", "diamond", "arrow", "bar", "dot"])
         .describe("arrowhead shape at the end of the arrow"),
     start: z
-        .strictObject({
+        .object({
             id: z
                 .string()
                 .describe("id of the shape from which to start the arrow"),
@@ -69,7 +69,7 @@ const drawArrowElementSchema = z.strictObject({
         .optional()
         .describe("shape from which to start the arrow"),
     end: z
-        .strictObject({
+        .object({
             id: z
                 .string()
                 .describe("id of the shape to which to connect the arrow"),
@@ -78,8 +78,26 @@ const drawArrowElementSchema = z.strictObject({
         .describe("shape to which to connect the arrow"),
 });
 
+const modifyShapeElementSchema = drawShapeElementSchema.partial().required({
+    id: true,
+    type: true,
+});
+
+const modifyTextElementSchema = drawTextElementSchema.partial().required({
+    id: true,
+    type: true,
+});
+
+const modifyArrowElementSchema = drawArrowElementSchema.partial().required({
+    id: true,
+    type: true,
+});
+
 export {
     drawShapeElementSchema,
     drawTextElementSchema,
     drawArrowElementSchema,
+    modifyArrowElementSchema,
+    modifyTextElementSchema,
+    modifyShapeElementSchema,
 };
