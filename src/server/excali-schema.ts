@@ -93,6 +93,10 @@ const modifyArrowElementSchema = drawArrowElementSchema.partial().required({
     type: true,
 });
 
+const deleteElementSchema = z.object({
+    id: z.string().describe("id of the element to delete"),
+});
+
 export {
     drawShapeElementSchema,
     drawTextElementSchema,
@@ -100,4 +104,5 @@ export {
     modifyArrowElementSchema,
     modifyTextElementSchema,
     modifyShapeElementSchema,
+    deleteElementSchema,
 };

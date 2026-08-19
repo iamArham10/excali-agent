@@ -62,9 +62,26 @@ const modifyElements = tool({
     },
 });
 
+const deleteElements = tool({
+    description:
+        "delete one or more elements on the canvas. " +
+        "Also deletes labels bound to the deleted elements and any arrows " +
+        "connected to them.",
+    inputSchema: z.object({
+        ids: z
+            .array(z.string())
+            .min(1)
+            .describe("ids of the elements to delete"),
+    }),
+    execute: async ({ ids }) => {
+        return { ids };
+    },
+});
+
 const tools = {
     drawElements,
     modifyElements,
+    deleteElements,
 };
 
 export { tools };

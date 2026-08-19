@@ -27,7 +27,7 @@ export default function App() {
     });
     const [input, setInput] = useState("");
     const alreadyExecuted = useRef<Set<string>>(new Set());
-    const { bindApi, service, api } = useExcaliDrawHook()
+    const { bindApi, service, api } = useExcaliDrawHook();
 
     useEffect(() => {
         clearHistory();
@@ -44,25 +44,36 @@ export default function App() {
                 const toolName = getToolName(part);
                 const toolId = getToolCallId(part);
                 if (alreadyExecuted.current.has(toolId)) continue;
-                alreadyExecuted.current.add(toolId)
+                alreadyExecuted.current.add(toolId);
 
                 if (toolName === "drawElements") {
-                    const elements = (part.output as {
-                        elements: ExcalidrawElementSkeleton[]
-                    }).elements
-                    service.createElements(elements)
+                    const elements = (
+                        part.output as {
+                            elements: ExcalidrawElementSkeleton[];
+                        }
+                    ).elements;
+                    service.createElements(elements);
                 }
 
                 if (toolName === "modifyElements") {
-                    const elements = (part.output as {
-                        elements: ({ id: string, label?: { text: string } } & Partial<ExcalidrawElementSkeleton>)[]
-                    }).elements
-                    service.modifyElements(elements)
+                    const elements = (
+                        part.output as {
+                            elements: ({
+                                id: string;
+                                label?: { text: string };
+                            } & Partial<ExcalidrawElementSkeleton>)[];
+                        }
+                    ).elements;
+                    service.modifyElements(elements);
+                }
+
+                if (toolName === "deleteElements") {
+                    const { ids } = part.output as { ids: string[] };
+                    service.deleteElements(ids);
                 }
             }
         }
-    }
-        , [messages, api]);
+    }, [messages, api]);
 
     return (
         <div className="flex h-screen">
