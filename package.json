@@ -7,7 +7,8 @@
         "dev": "vite dev",
         "build": "vite build",
         "preview": "npm run build && vite preview",
-        "deploy": "npm run build && wrangler deploy"
+        "deploy": "npm run build && wrangler deploy",
+        "test": "npx tsx --env-file=.dev.vars src/evals/run-evals.ts"
     },
     "devDependencies": {
         "@cloudflare/vite-plugin": "^1.50.0",
