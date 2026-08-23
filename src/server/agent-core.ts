@@ -19,7 +19,9 @@ const SYSTEM_INSTRUCTIONS = `
     - use space between shapes and arrows as much as you can to avoid overlapping.
     - make sure to connect arrows in such a way it looks pleasing
     - deleting an element also removes its attached labels and any arrows connected to it, so there is no need to delete those separately.
-    - please keep the diagrams as simple as possible, avoid unnecessary complexity.
+    - please keep the diagrams as simple as possible, avoid unnecessary complexity. But that doesn't mean you should not connect shapes together.
+    - Never create shape without adding label with it.
+    - please use unique ids for shapes and labels and please reference them when connecting arrows.
         `;
 
 const DEFAULT_MAX_STEPS = 5;
@@ -39,7 +41,7 @@ type AgentArgs = {
 };
 
 export async function streamAgent({
-    model = openai("gpt-4o-mini"),
+    model = openai("gpt-5-mini"),
     messages,
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
@@ -57,7 +59,7 @@ export async function streamAgent({
 
 // agent for testing
 export async function runAgentForEval({
-    model = openai("gpt-4o-mini"),
+    model = openai("gpt-5-mini"),
     messages,
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
@@ -72,9 +74,9 @@ export async function runAgentForEval({
     });
 
     return {
-        text: result.text,
-        steps: result.steps,
-        toolResults: result.toolResults,
-        toolCalls: result.toolCalls,
+        text: await result.text,
+        steps: await result.steps,
+        toolResults: await result.toolResults,
+        toolCalls: await result.toolCalls,
     };
 }
