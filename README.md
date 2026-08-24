@@ -35,7 +35,7 @@ Prompt: "Create a Kubernetes cluster architecture with Ingress, Service, Pods, C
 
 - Node.js (version 18 or later)
 - npm
-- OpenAI API key
+- OpenAI API key ( I used gpt 5 mini for the above tasks)
 
 ## Getting Started
 
