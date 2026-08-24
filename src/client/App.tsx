@@ -1,14 +1,5 @@
 import "@excalidraw/excalidraw/index.css";
-import {
-    CaptureUpdateAction,
-    convertToExcalidrawElements,
-    Excalidraw,
-    newElementWith,
-} from "@excalidraw/excalidraw";
-import {
-    ExcalidrawElement,
-    ExcalidrawTextElement,
-} from "@excalidraw/excalidraw/element/types";
+import { Excalidraw } from "@excalidraw/excalidraw";
 import { getToolCallId, useAgentChat } from "@cloudflare/ai-chat/react";
 import { useAgent } from "agents/react";
 import { useEffect, useRef, useState } from "react";
@@ -68,8 +59,10 @@ export default function App() {
                 }
 
                 if (toolName === "deleteElements") {
-                    const { ids } = part.output as { ids: string[] };
-                    service.deleteElements(ids);
+                    const { elements } = part.output as {
+                        elements: { id: string }[];
+                    };
+                    service.deleteElements(elements);
                 }
             }
         }

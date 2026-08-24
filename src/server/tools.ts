@@ -1,13 +1,9 @@
-import z from "zod";
 import { tool } from "ai";
 
 import {
-    drawArrowElementSchema,
-    drawShapeElementSchema,
-    drawTextElementSchema,
-    modifyArrowElementSchema,
-    modifyTextElementSchema,
-    modifyShapeElementSchema,
+    DeleteElementsToolSchema,
+    DrawElementsToolSchema,
+    ModifyElementsToolSchema,
 } from "./excali-schema";
 
 const drawElements = tool({
@@ -15,18 +11,7 @@ const drawElements = tool({
         "Draw one or more elements on the canvas. Supports shapes (rectangle, " +
         "ellipse, diamond) and text elements. Elements can reference each " +
         "other by id within the same call.",
-    inputSchema: z.object({
-        elements: z
-            .array(
-                z.discriminatedUnion("type", [
-                    drawShapeElementSchema,
-                    drawTextElementSchema,
-                    drawArrowElementSchema,
-                ]),
-            )
-            .min(1)
-            .describe("elements to draw"),
-    }),
+    inputSchema: DrawElementsToolSchema,
     execute: async ({ elements }) => {
         return { elements };
     },
@@ -35,18 +20,7 @@ const drawElements = tool({
 const modifyElements = tool({
     description:
         "modify one or more elements on the canvas. use id to reference elements, and make sure to include type as well.",
-    inputSchema: z.object({
-        elements: z
-            .array(
-                z.discriminatedUnion("type", [
-                    modifyShapeElementSchema,
-                    modifyTextElementSchema,
-                    modifyArrowElementSchema,
-                ]),
-            )
-            .min(1)
-            .describe("elements to modify"),
-    }),
+    inputSchema: ModifyElementsToolSchema,
     execute: async ({ elements }) => {
         return {
             // strip out absent optional attributes so only actually-provided
@@ -67,14 +41,9 @@ const deleteElements = tool({
         "delete one or more elements on the canvas. " +
         "Also deletes labels bound to the deleted elements and any arrows " +
         "connected to them.",
-    inputSchema: z.object({
-        ids: z
-            .array(z.string())
-            .min(1)
-            .describe("ids of the elements to delete"),
-    }),
-    execute: async ({ ids }) => {
-        return { ids };
+    inputSchema: DeleteElementsToolSchema,
+    execute: async ({ elements }) => {
+        return { elements };
     },
 });
 

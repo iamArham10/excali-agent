@@ -1,5 +1,11 @@
 import z from "zod";
 
+export const toolNameType = z.enum([
+    "drawElements",
+    "modifyElements",
+    "deleteElements",
+]);
+
 const toolSelectionGoldenDatasetItemType = z.object({
     id: z.string(),
     input: z.string(),
@@ -14,13 +20,13 @@ const toolSelectionGoldenDatasetItemType = z.object({
     expected: z.object({
         toolCalls: z.array(
             z.object({
-                toolName: z.string(),
-                requiredArguments: z.any(),
+                toolName: toolNameType,
+                requiredArguments: z.record(z.string(), z.unknown()),
             }),
         ),
     }),
     difficulty: z.enum(["easy", "medium", "hard"]),
-    category: z.enum(["create", "modify"]),
+    category: z.enum(["create", "modify", "delete"]),
 });
 
 export const toolSelectionGoldenDatasetType = z.array(

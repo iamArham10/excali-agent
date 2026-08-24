@@ -97,12 +97,41 @@ const deleteElementSchema = z.object({
     id: z.string().describe("id of the element to delete"),
 });
 
+const DrawElementsToolSchema = z.object({
+    elements: z
+        .array(
+            z.discriminatedUnion("type", [
+                drawShapeElementSchema,
+                drawTextElementSchema,
+                drawArrowElementSchema,
+            ]),
+        )
+        .min(1)
+        .describe("elements to draw"),
+});
+
+const ModifyElementsToolSchema = z.object({
+    elements: z
+        .array(
+            z.discriminatedUnion("type", [
+                modifyShapeElementSchema,
+                modifyTextElementSchema,
+                modifyArrowElementSchema,
+            ]),
+        )
+        .min(1)
+        .describe("elements to modify"),
+});
+
+const DeleteElementsToolSchema = z.object({
+    elements: z
+        .array(deleteElementSchema)
+        .min(1)
+        .describe("elements to delete"),
+});
+
 export {
-    drawShapeElementSchema,
-    drawTextElementSchema,
-    drawArrowElementSchema,
-    modifyArrowElementSchema,
-    modifyTextElementSchema,
-    modifyShapeElementSchema,
-    deleteElementSchema,
+    DrawElementsToolSchema,
+    ModifyElementsToolSchema,
+    DeleteElementsToolSchema,
 };

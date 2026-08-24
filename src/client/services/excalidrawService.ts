@@ -5,10 +5,6 @@ import {
 } from "@excalidraw/excalidraw";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import type { ElementUpdate } from "@excalidraw/excalidraw/element/mutateElement";
-import {
-    ExcalidrawArrowElement,
-    ExcalidrawElement,
-} from "@excalidraw/excalidraw/element/types";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 export class ExcaliDrawService {
@@ -55,9 +51,9 @@ export class ExcaliDrawService {
         this.api.updateScene({ elements: merged });
     }
 
-    deleteElements(ids: string[]) {
+    deleteElements(elementsToDelete: { id: string }[]) {
         const elements = this.api.getSceneElements();
-        const toDelete = new Set(ids);
+        const toDelete = new Set(elementsToDelete.map(({ id }) => id));
 
         for (const el of elements) {
             if (

@@ -2,10 +2,7 @@ type EvalOutput = {
     toolCalls: { toolName: string }[];
 };
 
-type EvalExpected = {
-    toolCalls: { toolName: string; requiredArguments: unknown }[];
-};
-
+type EvalExpected = { toolName: string }[];
 // Check if the agent called the correct tools in the correct order.
 export function toolSelectionScorer({
     output,
@@ -16,9 +13,7 @@ export function toolSelectionScorer({
 }) {
     const actualCalls = output.toolCalls.map((toolCall) => toolCall.toolName);
 
-    const expectedCalls = expected.toolCalls.map(
-        (toolCall) => toolCall.toolName,
-    );
+    const expectedCalls = expected.map((toolCall) => toolCall.toolName);
 
     const maxLen = Math.max(actualCalls.length, expectedCalls.length);
 

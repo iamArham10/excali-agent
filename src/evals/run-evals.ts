@@ -1,13 +1,14 @@
 import { Eval } from "braintrust";
 import { readFileSync } from "node:fs";
 import { runAgentForEval } from "../server/agent-core";
-import { toolSelectionScorer } from "./eval-scorers";
+import { argumentSelectionScorer } from "./scorers/argumentSelectionScorer";
+import { toolSelectionScorer } from "./scorers/toolSelectionScorer";
 
 import { toolSelectionGoldenDatasetType } from "./types";
 import { buildMessages } from "./build-messages";
 
 const datasetPath = new URL(
-    "./dataset/tool-selection-golden-dataset.json",
+    "./dataset/tools-usage-golden-dataset.json",
     import.meta.url,
 );
 
@@ -19,7 +20,7 @@ Eval("excali-agent", {
     data: toolSelectionTestCases.map((testCase) => {
         return {
             input: testCase,
-            expected: testCase.expected,
+            expected: testCase.expected.toolCalls,
             metadata: {
                 id: testCase.id,
                 difficulty: testCase.difficulty,
@@ -38,5 +39,5 @@ Eval("excali-agent", {
             toolResults: result.toolResults,
         };
     },
-    scores: [toolSelectionScorer],
+    scores: [toolSelectionScorer, argumentSelectionScorer],
 });
