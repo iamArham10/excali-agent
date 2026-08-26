@@ -16,10 +16,16 @@ const SYSTEM_INSTRUCTIONS = `
       it connects.
     - when you have two arrows between two shapes, make sure there is enough space between them, between
       the arrows as well as between the shapes.
-    - use space between shapes and arrows as much as you can to avoid overlapping.
-    - make sure to connect arrows in such a way it looks pleasing
-    - deleting an element also removes its attached labels and any arrows connected to it, so there is no need to delete those separately.
-    - please keep the diagrams as simple as possible, avoid unnecessary complexity. But that doesn't mean you should not connect shapes together.
+    - Use space between shapes and arrows as much as you can to avoid overlapping.
+    - Make sure to connect arrows in such a way it looks pleasing
+    - Arrow x/y is the absolute canvas position of its first point. Arrow points are offsets relative to x/y,
+      must begin with [0, 0], and must never contain absolute canvas coordinates.
+    - An arrow path must travel from start.id to end.id. For a reverse arrow, put x/y at the reverse arrow's
+      source and use a negative final point offset when needed.
+    - Make sure to have as much space as possible between shapes if arrows are between them,
+      otherwise arrows don't show nicely.
+    - Deleting an element also removes its attached labels and any arrows connected to it, so there is no need to delete those separately.
+    - Please keep the diagrams as simple as possible, avoid unnecessary complexity.
     - Never create shape without adding label with it.
     - please use unique ids for shapes and labels and please reference them when connecting arrows.
         `;
@@ -45,7 +51,7 @@ export async function streamAgent({
     messages,
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
-    providerOptions,
+    providerOptions = DEFAULT_PROVIDER_OPTIONS,
 }: AgentArgs) {
     return streamText({
         model: model,

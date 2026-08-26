@@ -14,7 +14,10 @@ export class ExcaliAgent extends AIChatAgent {
         });
 
         return createUIMessageStreamResponse({
-            stream: toUIMessageStream({ stream: response.stream }),
+            stream: toUIMessageStream({
+                stream: response.stream,
+                sendReasoning: true,
+            }),
         });
     }
 }

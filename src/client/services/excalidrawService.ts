@@ -6,6 +6,15 @@ import {
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import type { ElementUpdate } from "@excalidraw/excalidraw/element/mutateElement";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+import { normalizeArrowSkeletons } from "./normalizeArrowSkeletons";
+
+function downloadJSON(data: unknown, filename = "result.json") {
+    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
 
 export class ExcaliDrawService {
     constructor(
@@ -18,8 +27,14 @@ export class ExcaliDrawService {
     }
 
     createElements(skeletons: ExcalidrawElementSkeleton[]) {
+        const normalizedSkeletons = normalizeArrowSkeletons(
+            skeletons,
+            this.api.getSceneElements(),
+        );
         const newElements = restoreElements(
-            convertToExcalidrawElements(skeletons, { regenerateIds: false }),
+            convertToExcalidrawElements(normalizedSkeletons, {
+                regenerateIds: false,
+            }),
             null,
         );
 
