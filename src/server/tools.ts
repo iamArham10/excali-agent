@@ -8,9 +8,9 @@ import {
 
 const drawElements = tool({
     description:
-        "Draw one or more elements on the canvas. Supports shapes (rectangle, " +
-        "ellipse, diamond) and text elements. Elements can reference each " +
-        "other by id within the same call.",
+        "Draw shapes, text, and arrows on the canvas. To connect shapes, an arrow " +
+        "references only their ids in start.id and end.id; the canvas service " +
+        "calculates all arrow coordinates and binding points.",
     inputSchema: DrawElementsToolSchema,
     execute: async ({ elements }) => {
         return { elements };

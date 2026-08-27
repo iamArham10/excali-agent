@@ -4,17 +4,16 @@ import {
     restoreElements,
 } from "@excalidraw/excalidraw";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
+import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { ElementUpdate } from "@excalidraw/excalidraw/element/mutateElement";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { normalizeArrowSkeletons } from "./normalizeArrowSkeletons";
-
-function downloadJSON(data: unknown, filename = "result.json") {
-    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
+import {
+    ARROW_GAP,
+    isArrowSkeleton,
+    positionArrowSkeletons,
+    type AgentElementSkeleton,
+    type ArrowBindingSpec,
+} from "./normalizeArrowSkeletons";
 
 export class ExcaliDrawService {
     constructor(
@@ -26,21 +25,93 @@ export class ExcaliDrawService {
         return this.apiRef.current;
     }
 
-    createElements(skeletons: ExcalidrawElementSkeleton[]) {
-        const normalizedSkeletons = normalizeArrowSkeletons(
-            skeletons,
-            this.api.getSceneElements(),
-        );
-        const newElements = restoreElements(
-            convertToExcalidrawElements(normalizedSkeletons, {
+    createElements(skeletons: AgentElementSkeleton[]) {
+        const existingElements = this.api.getSceneElements();
+        const shapeSkeletons = skeletons.filter(
+            (skeleton) => !isArrowSkeleton(skeleton),
+        ) as ExcalidrawElementSkeleton[];
+        const arrowSkeletons = skeletons.filter(isArrowSkeleton);
+
+        // Convert shapes first so arrow geometry uses their actual dimensions,
+        // including dimensions calculated by Excalidraw for bound labels.
+        const newShapeElements = restoreElements(
+            convertToExcalidrawElements(shapeSkeletons, {
                 regenerateIds: false,
             }),
             null,
         );
+        const targets = [...existingElements, ...newShapeElements].filter(
+            (element) =>
+                element.type === "rectangle" ||
+                element.type === "ellipse" ||
+                element.type === "diamond",
+        );
+        const positionedArrows = positionArrowSkeletons(
+            arrowSkeletons,
+            targets,
+            existingElements,
+        );
+        const newArrowElements = restoreElements(
+            convertToExcalidrawElements(
+                positionedArrows.map(({ skeleton }) => skeleton),
+                { regenerateIds: false },
+            ),
+            null,
+        );
 
-        const elements = [...this.api.getSceneElements(), ...newElements];
+        const elements = this.applyArrowBindings(
+            [...existingElements, ...newShapeElements, ...newArrowElements],
+            positionedArrows.map(({ binding }) => binding),
+        );
         this.api.updateScene({ elements });
         this.api.scrollToContent(elements, { fitToContent: true });
+    }
+
+    private applyArrowBindings(
+        elements: readonly ExcalidrawElement[],
+        bindings: readonly ArrowBindingSpec[],
+    ) {
+        const bindingByArrowId = new Map(
+            bindings.map((binding) => [binding.arrowId, binding]),
+        );
+        const arrowsByTargetId = new Map<string, string[]>();
+
+        for (const binding of bindings) {
+            for (const targetId of [binding.startId, binding.endId]) {
+                const arrowIds = arrowsByTargetId.get(targetId) ?? [];
+                arrowIds.push(binding.arrowId);
+                arrowsByTargetId.set(targetId, arrowIds);
+            }
+        }
+
+        return elements.map((element) => {
+            const binding = bindingByArrowId.get(element.id);
+            if (element.type === "arrow" && binding) {
+                return newElementWith(element, {
+                    startBinding: {
+                        elementId: binding.startId,
+                        focus: binding.startFocus,
+                        gap: ARROW_GAP,
+                    },
+                    endBinding: {
+                        elementId: binding.endId,
+                        focus: binding.endFocus,
+                        gap: ARROW_GAP,
+                    },
+                });
+            }
+
+            const arrowIds = arrowsByTargetId.get(element.id);
+            if (!arrowIds) return element;
+
+            const boundElements = [...(element.boundElements ?? [])];
+            for (const arrowId of arrowIds) {
+                if (!boundElements.some(({ id }) => id === arrowId)) {
+                    boundElements.push({ id: arrowId, type: "arrow" });
+                }
+            }
+            return newElementWith(element, { boundElements });
+        });
     }
 
     modifyElements(

@@ -32,59 +32,35 @@ const drawTextElementSchema = z.object({
     y: z.number().describe("top left y coordinate of the text"),
 });
 
-const pointSchema = z
-    .array(z.tuple([z.number(), z.number()]))
-    .min(2)
-    .describe(
-        "An ordered list of [x, y] coordinate points that defines the path of the line or arrow. " +
-            "Coordinates MUST be relative to the arrow's x and y, never absolute canvas coordinates. " +
-            "The first point MUST be [0, 0]. The last point is the offset from the start to the end. " +
-            "The path must run from the shape in start.id toward the shape in end.id. " +
-            "Use additional relative points to create bends or multi-segment paths. " +
-            "For a straight 200px rightward arrow use x/y for its canvas start and points [[0, 0], [200, 0]].",
-    );
+const arrowEndpointSchema = z.object({
+    id: z.string().describe("id of the shape to connect"),
+});
 
-const drawArrowElementSchema = z.object({
+const arrowStyleSchema = z.object({
     type: z.literal("arrow"),
     id: z
         .string()
         .describe(
             "id of the arrow element, choose unique id so you can later refer to the element",
         ),
-    x: z
-        .number()
-        .describe("canvas x coordinate of the arrow's first path point"),
-    y: z
-        .number()
-        .describe("canvas y coordinate of the arrow's first path point"),
     label: label.optional().describe("label to attach to the arrow"),
-    points: pointSchema.optional(),
     startArrowhead: z
         .enum(["circle", "diamond", "arrow", "bar", "dot"])
-        .describe("arrowhead shape at the start of the arrow"),
+        .optional()
+        .describe("optional arrowhead shape at the start of the arrow"),
     endArrowhead: z
         .enum(["circle", "diamond", "arrow", "bar", "dot"])
-        .describe("arrowhead shape at the end of the arrow"),
-    start: z
-        .object({
-            id: z
-                .string()
-                .describe("id of the shape from which to start the arrow"),
-        })
         .optional()
-        .describe(
-            "shape at the first path point; points must travel away from this shape",
-        ),
-    end: z
-        .object({
-            id: z
-                .string()
-                .describe("id of the shape to which to connect the arrow"),
-        })
-        .optional()
-        .describe(
-            "shape at the last path point; points must travel toward this shape",
-        ),
+        .describe("optional arrowhead shape at the end of the arrow"),
+});
+
+const drawArrowElementSchema = arrowStyleSchema.extend({
+    start: arrowEndpointSchema.describe(
+        "id of the shape from which the arrow starts",
+    ),
+    end: arrowEndpointSchema.describe(
+        "id of the shape to which the arrow points",
+    ),
 });
 
 const modifyShapeElementSchema = drawShapeElementSchema.partial().required({
@@ -97,7 +73,7 @@ const modifyTextElementSchema = drawTextElementSchema.partial().required({
     type: true,
 });
 
-const modifyArrowElementSchema = drawArrowElementSchema.partial().required({
+const modifyArrowElementSchema = arrowStyleSchema.partial().required({
     id: true,
     type: true,
 });

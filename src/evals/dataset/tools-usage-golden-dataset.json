@@ -2,7 +2,9 @@
     {
         "id": "create-single-shape",
         "input": "Create a rectangle labeled client",
-        "expectedCharacteristics": ["a rectangle labeled client is created"],
+        "expectedCharacteristics": [
+            "a rectangle labeled client is created"
+        ],
         "expected": {
             "toolCalls": [
                 {
@@ -10,11 +12,19 @@
                     "requiredArguments": {
                         "elements": [
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "rectangle",
-                                "x": { "__matcher__": "exists" },
-                                "y": { "__matcher__": "exists" },
-                                "label": { "text": "client" }
+                                "x": {
+                                    "__matcher__": "exists"
+                                },
+                                "y": {
+                                    "__matcher__": "exists"
+                                },
+                                "label": {
+                                    "text": "client"
+                                }
                             }
                         ]
                     }
@@ -38,14 +48,22 @@
                     "requiredArguments": {
                         "elements": [
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "ellipse",
-                                "label": { "text": "cache" }
+                                "label": {
+                                    "text": "cache"
+                                }
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "diamond",
-                                "label": { "text": "decision" }
+                                "label": {
+                                    "text": "decision"
+                                }
                             }
                         ]
                     }
@@ -69,7 +87,9 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 }
             ]
         },
@@ -84,15 +104,27 @@
                     "requiredArguments": {
                         "elements": [
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "rectangle",
-                                "label": { "text": "database" }
+                                "label": {
+                                    "text": "database"
+                                }
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "arrow",
-                                "start": { "id": { "__matcher__": "exists" } },
-                                "end": { "id": "rectangle-server" }
+                                "start": {
+                                    "id": {
+                                        "__matcher__": "exists"
+                                    }
+                                },
+                                "end": {
+                                    "id": "rectangle-server"
+                                }
                             }
                         ]
                     }
@@ -116,7 +148,9 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 },
                 {
                     "id": "rectangle-server",
@@ -125,21 +159,21 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 },
                 {
                     "id": "arrow-client-server",
                     "type": "arrow",
-                    "x": 210,
-                    "y": 100,
-                    "points": [
-                        [0, 0],
-                        [140, 0]
-                    ],
                     "startArrowhead": "dot",
                     "endArrowhead": "arrow",
-                    "start": { "id": "rectangle-client" },
-                    "end": { "id": "rectangle-server" }
+                    "start": {
+                        "id": "rectangle-client"
+                    },
+                    "end": {
+                        "id": "rectangle-server"
+                    }
                 }
             ]
         },
@@ -179,11 +213,15 @@
                     "y": 100,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "backend" }
+                    "label": {
+                        "text": "backend"
+                    }
                 }
             ]
         },
-        "expectedCharacteristics": ["the backend rectangle is relabeled API"],
+        "expectedCharacteristics": [
+            "the backend rectangle is relabeled API"
+        ],
         "expected": {
             "toolCalls": [
                 {
@@ -193,7 +231,9 @@
                             {
                                 "id": "rectangle-backend",
                                 "type": "rectangle",
-                                "label": { "text": "API" }
+                                "label": {
+                                    "text": "API"
+                                }
                             }
                         ]
                     }
@@ -217,7 +257,9 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 }
             ]
         },
@@ -258,7 +300,9 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "cache" }
+                    "label": {
+                        "text": "cache"
+                    }
                 },
                 {
                     "id": "rectangle-database",
@@ -267,17 +311,25 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "database" }
+                    "label": {
+                        "text": "database"
+                    }
                 }
             ]
         },
-        "expectedCharacteristics": ["only the cache rectangle is deleted"],
+        "expectedCharacteristics": [
+            "only the cache rectangle is deleted"
+        ],
         "expected": {
             "toolCalls": [
                 {
                     "toolName": "deleteElements",
                     "requiredArguments": {
-                        "elements": [{ "id": "rectangle-cache" }]
+                        "elements": [
+                            {
+                                "id": "rectangle-cache"
+                            }
+                        ]
                     }
                 }
             ]
@@ -297,21 +349,27 @@
                     "type": "rectangle",
                     "x": 50,
                     "y": 60,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 },
                 {
                     "id": "rectangle-cache",
                     "type": "rectangle",
                     "x": 250,
                     "y": 60,
-                    "label": { "text": "cache" }
+                    "label": {
+                        "text": "cache"
+                    }
                 },
                 {
                     "id": "rectangle-server",
                     "type": "rectangle",
                     "x": 450,
                     "y": 60,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 }
             ]
         },
@@ -325,8 +383,12 @@
                     "toolName": "deleteElements",
                     "requiredArguments": {
                         "elements": [
-                            { "id": "rectangle-client" },
-                            { "id": "rectangle-cache" }
+                            {
+                                "id": "rectangle-client"
+                            },
+                            {
+                                "id": "rectangle-cache"
+                            }
                         ]
                     }
                 }
@@ -347,28 +409,30 @@
                     "type": "rectangle",
                     "x": 50,
                     "y": 60,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 },
                 {
                     "id": "rectangle-server",
                     "type": "rectangle",
                     "x": 350,
                     "y": 60,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 },
                 {
                     "id": "arrow-client-server",
                     "type": "arrow",
-                    "x": 210,
-                    "y": 100,
-                    "points": [
-                        [0, 0],
-                        [140, 0]
-                    ],
                     "startArrowhead": "dot",
                     "endArrowhead": "arrow",
-                    "start": { "id": "rectangle-client" },
-                    "end": { "id": "rectangle-server" }
+                    "start": {
+                        "id": "rectangle-client"
+                    },
+                    "end": {
+                        "id": "rectangle-server"
+                    }
                 }
             ]
         },
@@ -380,7 +444,11 @@
                 {
                     "toolName": "deleteElements",
                     "requiredArguments": {
-                        "elements": [{ "id": "rectangle-client" }]
+                        "elements": [
+                            {
+                                "id": "rectangle-client"
+                            }
+                        ]
                     }
                 }
             ]
@@ -403,32 +471,64 @@
                     "requiredArguments": {
                         "elements": [
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "rectangle",
-                                "label": { "text": "frontend" }
+                                "label": {
+                                    "text": "frontend"
+                                }
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "rectangle",
-                                "label": { "text": "API" }
+                                "label": {
+                                    "text": "API"
+                                }
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "ellipse",
-                                "label": { "text": "database" }
+                                "label": {
+                                    "text": "database"
+                                }
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "arrow",
-                                "start": { "id": { "__matcher__": "exists" } },
-                                "end": { "id": { "__matcher__": "exists" } },
+                                "start": {
+                                    "id": {
+                                        "__matcher__": "exists"
+                                    }
+                                },
+                                "end": {
+                                    "id": {
+                                        "__matcher__": "exists"
+                                    }
+                                },
                                 "endArrowhead": "arrow"
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "arrow",
-                                "start": { "id": { "__matcher__": "exists" } },
-                                "end": { "id": { "__matcher__": "exists" } },
+                                "start": {
+                                    "id": {
+                                        "__matcher__": "exists"
+                                    }
+                                },
+                                "end": {
+                                    "id": {
+                                        "__matcher__": "exists"
+                                    }
+                                },
                                 "endArrowhead": "arrow"
                             }
                         ]
@@ -453,7 +553,9 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 },
                 {
                     "id": "rectangle-server",
@@ -462,21 +564,21 @@
                     "y": 60,
                     "width": 160,
                     "height": 80,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 },
                 {
                     "id": "arrow-client-server",
                     "type": "arrow",
-                    "x": 210,
-                    "y": 100,
-                    "points": [
-                        [0, 0],
-                        [140, 0]
-                    ],
                     "startArrowhead": "dot",
                     "endArrowhead": "arrow",
-                    "start": { "id": "rectangle-client" },
-                    "end": { "id": "rectangle-server" }
+                    "start": {
+                        "id": "rectangle-client"
+                    },
+                    "end": {
+                        "id": "rectangle-server"
+                    }
                 }
             ]
         },
@@ -500,7 +602,9 @@
                             {
                                 "id": "rectangle-server",
                                 "type": "rectangle",
-                                "label": { "text": "API" }
+                                "label": {
+                                    "text": "API"
+                                }
                             },
                             {
                                 "id": "arrow-client-server",
@@ -528,28 +632,36 @@
                     "type": "rectangle",
                     "x": 50,
                     "y": 60,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 },
                 {
                     "id": "rectangle-worker",
                     "type": "rectangle",
                     "x": 250,
                     "y": 60,
-                    "label": { "text": "worker" }
+                    "label": {
+                        "text": "worker"
+                    }
                 },
                 {
                     "id": "rectangle-cache",
                     "type": "rectangle",
                     "x": 450,
                     "y": 60,
-                    "label": { "text": "cache" }
+                    "label": {
+                        "text": "cache"
+                    }
                 },
                 {
                     "id": "rectangle-database",
                     "type": "rectangle",
                     "x": 650,
                     "y": 60,
-                    "label": { "text": "database" }
+                    "label": {
+                        "text": "database"
+                    }
                 }
             ]
         },
@@ -563,8 +675,12 @@
                     "toolName": "deleteElements",
                     "requiredArguments": {
                         "elements": [
-                            { "id": "rectangle-client" },
-                            { "id": "rectangle-worker" }
+                            {
+                                "id": "rectangle-client"
+                            },
+                            {
+                                "id": "rectangle-worker"
+                            }
                         ]
                     }
                 }
@@ -585,14 +701,18 @@
                     "type": "rectangle",
                     "x": 50,
                     "y": 60,
-                    "label": { "text": "cache" }
+                    "label": {
+                        "text": "cache"
+                    }
                 },
                 {
                     "id": "rectangle-server",
                     "type": "rectangle",
                     "x": 350,
                     "y": 60,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 }
             ]
         },
@@ -606,7 +726,11 @@
                 {
                     "toolName": "deleteElements",
                     "requiredArguments": {
-                        "elements": [{ "id": "rectangle-cache" }]
+                        "elements": [
+                            {
+                                "id": "rectangle-cache"
+                            }
+                        ]
                     }
                 },
                 {
@@ -614,15 +738,27 @@
                     "requiredArguments": {
                         "elements": [
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "rectangle",
-                                "label": { "text": "queue" }
+                                "label": {
+                                    "text": "queue"
+                                }
                             },
                             {
-                                "id": { "__matcher__": "exists" },
+                                "id": {
+                                    "__matcher__": "exists"
+                                },
                                 "type": "arrow",
-                                "start": { "id": { "__matcher__": "exists" } },
-                                "end": { "id": "rectangle-server" },
+                                "start": {
+                                    "id": {
+                                        "__matcher__": "exists"
+                                    }
+                                },
+                                "end": {
+                                    "id": "rectangle-server"
+                                },
                                 "endArrowhead": "arrow"
                             }
                         ]
@@ -645,28 +781,30 @@
                     "type": "rectangle",
                     "x": 50,
                     "y": 60,
-                    "label": { "text": "client" }
+                    "label": {
+                        "text": "client"
+                    }
                 },
                 {
                     "id": "rectangle-server",
                     "type": "rectangle",
                     "x": 350,
                     "y": 60,
-                    "label": { "text": "server" }
+                    "label": {
+                        "text": "server"
+                    }
                 },
                 {
                     "id": "arrow-client-server",
                     "type": "arrow",
-                    "x": 210,
-                    "y": 100,
-                    "points": [
-                        [0, 0],
-                        [140, 0]
-                    ],
                     "startArrowhead": "dot",
                     "endArrowhead": "arrow",
-                    "start": { "id": "rectangle-client" },
-                    "end": { "id": "rectangle-server" }
+                    "start": {
+                        "id": "rectangle-client"
+                    },
+                    "end": {
+                        "id": "rectangle-server"
+                    }
                 }
             ]
         },
@@ -683,7 +821,9 @@
                             {
                                 "id": "rectangle-server",
                                 "type": "rectangle",
-                                "label": { "text": "API" }
+                                "label": {
+                                    "text": "API"
+                                }
                             }
                         ]
                     }
@@ -691,7 +831,11 @@
                 {
                     "toolName": "deleteElements",
                     "requiredArguments": {
-                        "elements": [{ "id": "rectangle-client" }]
+                        "elements": [
+                            {
+                                "id": "rectangle-client"
+                            }
+                        ]
                     }
                 }
             ]

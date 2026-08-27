@@ -8,6 +8,7 @@ import MessageList from "./components/MessageList";
 import { getToolName, isToolUIPart } from "ai";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import { useExcaliDrawHook } from "./hooks/useExcaliDrawHook";
+import type { AgentElementSkeleton } from "./services/normalizeArrowSkeletons";
 
 const sessionId = crypto.randomUUID();
 
@@ -40,7 +41,7 @@ export default function App() {
                 if (toolName === "drawElements") {
                     const elements = (
                         part.output as {
-                            elements: ExcalidrawElementSkeleton[];
+                            elements: AgentElementSkeleton[];
                         }
                     ).elements;
                     service.createElements(elements);
