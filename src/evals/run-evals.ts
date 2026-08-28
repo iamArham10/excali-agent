@@ -37,6 +37,7 @@ Eval("excali-agent", {
             steps: result.steps,
             toolCalls: result.toolCalls,
             toolResults: result.toolResults,
+            testCaseCategory: testCase.category,
         };
     },
     scores: [toolSelectionScorer, argumentSelectionScorer],

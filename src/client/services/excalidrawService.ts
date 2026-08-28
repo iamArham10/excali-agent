@@ -19,7 +19,7 @@ function downloadJSON(data: unknown, filename = "result.json") {
 export class ExcaliDrawService {
     constructor(
         private apiRef: React.RefObject<ExcalidrawImperativeAPI | null>,
-    ) {}
+    ) { }
 
     private get api() {
         if (!this.apiRef.current) throw new Error("apiRef is not initialized");
@@ -54,12 +54,37 @@ export class ExcaliDrawService {
             modifiedElementsSkeletons.map((u) => [u.id, u]),
         );
 
+        const labelTextByContainerId = new Map<string, string>();
+        for (const update of modifiedElementsSkeletons) {
+            if (update.label) {
+                labelTextByContainerId.set(update.id, update.label.text);
+            }
+        }
+
         const merged = elements.map((el) => {
             const update = updateById.get(el.id);
+
             if (update) {
                 const { id, label, ...changes } = update;
-                return newElementWith(el, changes as ElementUpdate<typeof el>);
+                return newElementWith(
+                    el,
+                    changes as ElementUpdate<typeof el>,
+                );
             }
+
+            if (el.type === "text" && el.containerId) {
+                const containerLabelText = labelTextByContainerId.get(
+                    el.containerId,
+                );
+
+                if (containerLabelText !== undefined) {
+                    return newElementWith(el, {
+                        text: containerLabelText,
+                        originalText: containerLabelText,
+                    });
+                }
+            }
+
             return el;
         });
 
@@ -87,7 +112,7 @@ export class ExcaliDrawService {
             if (el.type === "arrow") {
                 const changes = {
                     ...(el.startBinding &&
-                    toDelete.has(el.startBinding.elementId)
+                        toDelete.has(el.startBinding.elementId)
                         ? { startBinding: null }
                         : {}),
                     ...(el.endBinding && toDelete.has(el.endBinding.elementId)

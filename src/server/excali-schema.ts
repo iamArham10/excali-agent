@@ -34,14 +34,17 @@ const drawTextElementSchema = z.object({
 
 const pointSchema = z
     .array(z.tuple([z.number(), z.number()]))
-    .min(2)
+    .min(2).max(2)
     .describe(
         "An ordered list of [x, y] coordinate points that defines the path of the line or arrow. " +
-            "Coordinates MUST be relative to the arrow's x and y, never absolute canvas coordinates. " +
-            "The first point MUST be [0, 0]. The last point is the offset from the start to the end. " +
-            "The path must run from the shape in start.id toward the shape in end.id. " +
-            "Use additional relative points to create bends or multi-segment paths. " +
-            "For a straight 200px rightward arrow use x/y for its canvas start and points [[0, 0], [200, 0]].",
+        "Coordinates MUST be relative to the arrow's x and y, never absolute canvas coordinates. " +
+        "The first point MUST be [0, 0]. The last point is the offset from the start to the end. " +
+        "The path must run from the shape in start.id toward the shape in end.id. " +
+        "Do not create bends, always create straight lines, give only two points a start and end," +
+        "Please make sure you arrow connects with the shapes both at starting and ending" +
+        "For connecting them property think about the elements position and then what offset should i use," +
+        "That will make arrow start-start from the edge of the start shape and arrow end-end to the end shape" +
+        "For a straight 200px rightward arrow use x/y for its canvas start and points [[0, 0], [200, 0]].",
     );
 
 const drawArrowElementSchema = z.object({

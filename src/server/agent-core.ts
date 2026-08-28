@@ -19,25 +19,27 @@ const SYSTEM_INSTRUCTIONS = `
     - Use space between shapes and arrows as much as you can to avoid overlapping.
     - Make sure to connect arrows in such a way it looks pleasing
     - Arrow x/y is the absolute canvas position of its first point. Arrow points are offsets relative to x/y,
-      must begin with [0, 0], and must never contain absolute canvas coordinates.
+      it arrow points should never contain absolute canvas coordinates.
     - An arrow path must travel from start.id to end.id. For a reverse arrow, put x/y at the reverse arrow's
-      source and use a negative final point offset when needed.
+      source.
     - Make sure to have as much space as possible between shapes if arrows are between them,
       otherwise arrows don't show nicely.
     - Deleting an element also removes its attached labels and any arrows connected to it, so there is no need to delete those separately.
     - Please keep the diagrams as simple as possible, avoid unnecessary complexity.
     - Never create shape without adding label with it.
     - please use unique ids for shapes and labels and please reference them when connecting arrows.
+    - never create bended arrows, always create straight arrows
         `;
 
 const DEFAULT_MAX_STEPS = 5;
 
 const DEFAULT_PROVIDER_OPTIONS: ProviderOptions = {
     openai: {
-        reasoningSummary: "detailed",
+        reasoningSummary: "auto",
     },
 };
 
+const DEFAULT_MODEL = "gpt-5.6-luna";
 type AgentArgs = {
     model?: LanguageModel;
     messages: ModelMessage[];
@@ -47,7 +49,7 @@ type AgentArgs = {
 };
 
 export async function streamAgent({
-    model = openai("gpt-5-mini"),
+    model = openai(DEFAULT_MODEL),
     messages,
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
@@ -65,7 +67,7 @@ export async function streamAgent({
 
 // agent for testing
 export async function runAgentForEval({
-    model = openai("gpt-5-mini"),
+    model = openai(DEFAULT_MODEL),
     messages,
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
