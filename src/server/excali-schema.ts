@@ -63,10 +63,10 @@ const drawArrowElementSchema = z.object({
     label: label.optional().describe("label to attach to the arrow"),
     points: pointSchema.optional(),
     startArrowhead: z
-        .enum(["circle", "diamond", "arrow", "bar", "dot"])
+        .enum(["circle", "diamond", "arrow", "bar", "dot", "none"])
         .describe("arrowhead shape at the start of the arrow"),
     endArrowhead: z
-        .enum(["circle", "diamond", "arrow", "bar", "dot"])
+        .enum(["circle", "diamond", "arrow", "bar", "dot", "none"])
         .describe("arrowhead shape at the end of the arrow"),
     start: z
         .object({
