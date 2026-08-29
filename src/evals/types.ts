@@ -26,7 +26,7 @@ const toolSelectionGoldenDatasetItemType = z.object({
         ),
     }),
     difficulty: z.enum(["easy", "medium", "hard"]),
-    category: z.enum(["create", "modify", "delete"]),
+    category: z.enum(["create", "modify", "delete", "multi"]),
 });
 
 export const toolSelectionGoldenDatasetType = z.array(

@@ -25,6 +25,516 @@
         "category": "create"
     },
     {
+        "id": "create-ellipse",
+        "input": "Create an ellipse labeled Database",
+        "expectedCharacteristics": ["an ellipse labeled Database is created"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "ellipse",
+                                "x": { "__matcher__": "exists" },
+                                "y": { "__matcher__": "exists" },
+                                "label": { "text": "Database" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "create"
+    },
+    {
+        "id": "create-diamond",
+        "input": "Create a diamond labeled Is Valid?",
+        "expectedCharacteristics": ["a diamond labeled Is Valid? is created"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "diamond",
+                                "x": { "__matcher__": "exists" },
+                                "y": { "__matcher__": "exists" },
+                                "label": { "text": "Is Valid?" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "create"
+    },
+    {
+        "id": "create-text",
+        "input": "Add a title text element that says System Architecture",
+        "expectedCharacteristics": ["a standalone text element with the text System Architecture is created"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "text",
+                                "text": "System Architecture",
+                                "x": { "__matcher__": "exists" },
+                                "y": { "__matcher__": "exists" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "create"
+    },
+    {
+        "id": "create-single-arrow",
+        "input": "Draw a rectangle labeled A and a rectangle labeled B with an arrow from A to B",
+        "expectedCharacteristics": [
+            "two rectangles labeled A and B are created",
+            "an arrow connects A to B with start and end bindings"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "A" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "B" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "create"
+    },
+    {
+        "id": "create-three-node-flow",
+        "input": "Draw a flow with three rectangles labeled Input, Process, and Output connected left to right with arrows",
+        "expectedCharacteristics": [
+            "three rectangles labeled Input, Process, Output are created",
+            "an arrow connects Input to Process",
+            "an arrow connects Process to Output"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Input" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Process" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Output" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "create"
+    },
+    {
+        "id": "create-mixed-shapes",
+        "input": "Draw an ellipse labeled Start, a rectangle labeled Process, and a diamond labeled Done? connected in sequence with arrows",
+        "expectedCharacteristics": [
+            "an ellipse labeled Start is created",
+            "a rectangle labeled Process is created",
+            "a diamond labeled Done? is created",
+            "arrows connect Start to Process and Process to Done?"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "ellipse",
+                                "label": { "text": "Start" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Process" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "diamond",
+                                "label": { "text": "Done?" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "create"
+    },
+    {
+        "id": "create-bidirectional",
+        "input": "Draw two rectangles labeled Client and Server with arrows going in both directions between them",
+        "expectedCharacteristics": [
+            "two rectangles labeled Client and Server are created",
+            "an arrow goes from Client to Server",
+            "an arrow goes from Server to Client"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Client" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Server" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "create"
+    },
+    {
+        "id": "create-labeled-arrows",
+        "input": "Draw a rectangle labeled Submit connected to a diamond labeled Valid? with an arrow labeled validate",
+        "expectedCharacteristics": [
+            "a rectangle labeled Submit is created",
+            "a diamond labeled Valid? is created",
+            "an arrow labeled validate connects Submit to Valid?"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Submit" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "diamond",
+                                "label": { "text": "Valid?" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "label": { "text": "validate" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "create"
+    },
+    {
+        "id": "create-flowchart-branch",
+        "input": "Draw a flowchart: an ellipse labeled Start, a rectangle labeled Process, a diamond labeled Done?. From Done?, a Yes arrow goes to a rectangle labeled End, and a No arrow loops back to Process",
+        "expectedCharacteristics": [
+            "an ellipse labeled Start is created",
+            "a rectangle labeled Process is created",
+            "a diamond labeled Done? is created",
+            "a rectangle labeled End is created",
+            "arrows connect Start to Process, Process to Done?",
+            "a Yes arrow goes from Done? to End",
+            "a No arrow goes from Done? back to Process"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "ellipse",
+                                "label": { "text": "Start" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Process" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "diamond",
+                                "label": { "text": "Done?" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "End" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "label": { "text": "Yes" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "label": { "text": "No" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "hard",
+        "category": "create"
+    },
+    {
+        "id": "create-architecture",
+        "input": "Draw a 4-node architecture: a rectangle labeled User connects to a rectangle labeled API Gateway. API Gateway connects to an ellipse labeled Auth Service and also connects to an ellipse labeled Database",
+        "expectedCharacteristics": [
+            "a rectangle labeled User is created",
+            "a rectangle labeled API Gateway is created",
+            "an ellipse labeled Auth Service is created",
+            "an ellipse labeled Database is created",
+            "arrows connect User to API Gateway, API Gateway to Auth Service, and API Gateway to Database"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "User" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "API Gateway" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "ellipse",
+                                "label": { "text": "Auth Service" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "ellipse",
+                                "label": { "text": "Database" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "hard",
+        "category": "create"
+    },
+    {
+        "id": "create-complex-flow",
+        "input": "Draw a CI/CD pipeline: a rectangle labeled Code connects to a rectangle labeled Build, Build connects to a diamond labeled Test. From Test, a Pass arrow goes to a rectangle labeled Deploy, and a Fail arrow goes to a rectangle labeled Fix. Fix connects back to Code",
+        "expectedCharacteristics": [
+            "rectangles labeled Code, Build, Deploy, Fix are created",
+            "a diamond labeled Test is created",
+            "arrows connect Code to Build, Build to Test",
+            "a Pass arrow goes from Test to Deploy",
+            "a Fail arrow goes from Test to Fix",
+            "an arrow goes from Fix back to Code"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Code" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Build" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "diamond",
+                                "label": { "text": "Test" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Deploy" }
+                            },
+                            {
+                                "id": { "__matcher__": "exists" },
+                                "type": "rectangle",
+                                "label": { "text": "Fix" }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "label": { "text": "Pass" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "label": { "text": "Fail" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            },
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": { "__matcher__": "exists" } },
+                                "end": { "id": { "__matcher__": "exists" } }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "hard",
+        "category": "create"
+    },
+    {
         "id": "modify-label",
         "input": "Rename backend to API",
         "seed": {
@@ -60,6 +570,350 @@
             ]
         },
         "difficulty": "easy",
+        "category": "modify"
+    },
+    {
+        "id": "modify-add-label",
+        "input": "Add the label Primary to the database rectangle",
+        "seed": {
+            "userPrompt": "Draw a rectangle labeled database",
+            "agentResponse": "Created a rectangle labeled database.",
+            "elements": [
+                {
+                    "id": "rect-database",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "database" }
+                }
+            ]
+        },
+        "expectedCharacteristics": ["the database rectangle label is changed to Primary"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "rect-database",
+                                "type": "rectangle",
+                                "label": { "text": "Primary" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "modify"
+    },
+    {
+        "id": "modify-text-content",
+        "input": "Change the title text from Draft to Final",
+        "seed": {
+            "userPrompt": "Add a text element that says Draft",
+            "agentResponse": "Created a text element saying Draft.",
+            "elements": [
+                {
+                    "id": "text-title",
+                    "type": "text",
+                    "text": "Draft",
+                    "x": 100,
+                    "y": 20
+                }
+            ]
+        },
+        "expectedCharacteristics": ["the text element is changed from Draft to Final"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "text-title",
+                                "type": "text",
+                                "text": "Final"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "modify"
+    },
+    {
+        "id": "modify-shape-label-case",
+        "input": "Capitalize the frontend label to FRONTEND",
+        "seed": {
+            "userPrompt": "Draw a rectangle labeled frontend",
+            "agentResponse": "Created a rectangle labeled frontend.",
+            "elements": [
+                {
+                    "id": "rect-frontend",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "frontend" }
+                }
+            ]
+        },
+        "expectedCharacteristics": ["the frontend rectangle label is changed to FRONTEND"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "rect-frontend",
+                                "type": "rectangle",
+                                "label": { "text": "FRONTEND" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "modify"
+    },
+    {
+        "id": "modify-multiple-labels",
+        "input": "Rename svc-a to Auth Service and svc-b to User Service",
+        "seed": {
+            "userPrompt": "Draw two rectangles labeled svc-a and svc-b",
+            "agentResponse": "Created rectangles labeled svc-a and svc-b.",
+            "elements": [
+                {
+                    "id": "rect-svc-a",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "svc-a" }
+                },
+                {
+                    "id": "rect-svc-b",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "svc-b" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "svc-a is renamed to Auth Service",
+            "svc-b is renamed to User Service"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "rect-svc-a",
+                                "type": "rectangle",
+                                "label": { "text": "Auth Service" }
+                            },
+                            {
+                                "id": "rect-svc-b",
+                                "type": "rectangle",
+                                "label": { "text": "User Service" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "modify"
+    },
+    {
+        "id": "modify-arrow-label",
+        "input": "Label the arrow between Client and Server as HTTP Request",
+        "seed": {
+            "userPrompt": "Draw a rectangle labeled Client and a rectangle labeled Server with an arrow from Client to Server",
+            "agentResponse": "Created Client and Server rectangles with an arrow connecting them.",
+            "elements": [
+                {
+                    "id": "rect-client",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Client" }
+                },
+                {
+                    "id": "rect-server",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Server" }
+                },
+                {
+                    "id": "arrow-client-server",
+                    "type": "arrow",
+                    "x": 300,
+                    "y": 140,
+                    "points": [[0, 0], [80, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-client" },
+                    "end": { "id": "rect-server" }
+                }
+            ]
+        },
+        "expectedCharacteristics": ["the arrow between Client and Server is labeled HTTP Request"],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "arrow-client-server",
+                                "type": "arrow",
+                                "label": { "text": "HTTP Request" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "modify"
+    },
+    {
+        "id": "modify-relabel-preserve",
+        "input": "Rename the frontend rectangle to React App but keep backend unchanged",
+        "seed": {
+            "userPrompt": "Draw two rectangles labeled frontend and backend",
+            "agentResponse": "Created frontend and backend rectangles.",
+            "elements": [
+                {
+                    "id": "rect-frontend",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "frontend" }
+                },
+                {
+                    "id": "rect-backend",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "backend" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "only the frontend rectangle is renamed to React App",
+            "the backend rectangle is NOT modified"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "rect-frontend",
+                                "type": "rectangle",
+                                "label": { "text": "React App" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "modify"
+    },
+    {
+        "id": "modify-reroute-arrow",
+        "input": "Change the arrow so it points from API to Cache instead of from API to Database",
+        "seed": {
+            "userPrompt": "Draw rectangles labeled API, Cache, and Database with an arrow from API to Database",
+            "agentResponse": "Created API, Cache, Database rectangles with an arrow from API to Database.",
+            "elements": [
+                {
+                    "id": "rect-api",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "API" }
+                },
+                {
+                    "id": "rect-cache",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Cache" }
+                },
+                {
+                    "id": "rect-database",
+                    "type": "rectangle",
+                    "x": 660,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Database" }
+                },
+                {
+                    "id": "arrow-api-db",
+                    "type": "arrow",
+                    "x": 300,
+                    "y": 140,
+                    "points": [[0, 0], [360, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-api" },
+                    "end": { "id": "rect-database" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "the arrow is rebound to point from API to Cache instead of Database"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "modifyElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "id": "arrow-api-db",
+                                "type": "arrow",
+                                "end": { "id": "rect-cache" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "hard",
         "category": "modify"
     },
     {
@@ -102,5 +956,486 @@
         },
         "difficulty": "easy",
         "category": "delete"
+    },
+    {
+        "id": "delete-text-element",
+        "input": "Remove the title text",
+        "seed": {
+            "userPrompt": "Add a text element that says My Diagram and draw a rectangle labeled Service",
+            "agentResponse": "Created a title text and a Service rectangle.",
+            "elements": [
+                {
+                    "id": "text-title",
+                    "type": "text",
+                    "text": "My Diagram",
+                    "x": 100,
+                    "y": 20
+                },
+                {
+                    "id": "rect-service",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Service" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "only the title text is deleted",
+            "the Service rectangle is NOT deleted"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [{ "id": "text-title" }]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "delete"
+    },
+    {
+        "id": "delete-arrow",
+        "input": "Remove the arrow between Client and Server",
+        "seed": {
+            "userPrompt": "Draw rectangles Client and Server with an arrow between them",
+            "agentResponse": "Created Client and Server with a connecting arrow.",
+            "elements": [
+                {
+                    "id": "rect-client",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Client" }
+                },
+                {
+                    "id": "rect-server",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Server" }
+                },
+                {
+                    "id": "arrow-client-server",
+                    "type": "arrow",
+                    "x": 300,
+                    "y": 140,
+                    "points": [[0, 0], [80, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-client" },
+                    "end": { "id": "rect-server" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "only the arrow is deleted",
+            "both Client and Server rectangles remain"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [{ "id": "arrow-client-server" }]
+                    }
+                }
+            ]
+        },
+        "difficulty": "easy",
+        "category": "delete"
+    },
+    {
+        "id": "delete-multiple-elements",
+        "input": "Delete both the cache and queue rectangles",
+        "seed": {
+            "userPrompt": "Draw three rectangles labeled cache, queue, and database",
+            "agentResponse": "Created cache, queue, and database rectangles.",
+            "elements": [
+                {
+                    "id": "rect-cache",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "cache" }
+                },
+                {
+                    "id": "rect-queue",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "queue" }
+                },
+                {
+                    "id": "rect-database",
+                    "type": "rectangle",
+                    "x": 660,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "database" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "cache and queue rectangles are deleted",
+            "database rectangle is NOT deleted"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [
+                            { "id": "rect-cache" },
+                            { "id": "rect-queue" }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "delete"
+    },
+    {
+        "id": "delete-node-with-arrows",
+        "input": "Remove the API Gateway rectangle",
+        "seed": {
+            "userPrompt": "Draw rectangles User, API Gateway, Auth and Database. Connect User to API Gateway, API Gateway to Auth, and API Gateway to Database",
+            "agentResponse": "Created the architecture with User, API Gateway, Auth, and Database connected.",
+            "elements": [
+                {
+                    "id": "rect-user",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "User" }
+                },
+                {
+                    "id": "rect-gateway",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "API Gateway" }
+                },
+                {
+                    "id": "rect-auth",
+                    "type": "rectangle",
+                    "x": 660,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Auth" }
+                },
+                {
+                    "id": "rect-db",
+                    "type": "rectangle",
+                    "x": 660,
+                    "y": 260,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Database" }
+                },
+                {
+                    "id": "arrow-user-gw",
+                    "type": "arrow",
+                    "x": 300,
+                    "y": 140,
+                    "points": [[0, 0], [80, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-user" },
+                    "end": { "id": "rect-gateway" }
+                },
+                {
+                    "id": "arrow-gw-auth",
+                    "type": "arrow",
+                    "x": 580,
+                    "y": 140,
+                    "points": [[0, 0], [80, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-gateway" },
+                    "end": { "id": "rect-auth" }
+                },
+                {
+                    "id": "arrow-gw-db",
+                    "type": "arrow",
+                    "x": 580,
+                    "y": 140,
+                    "points": [[0, 0], [80, 120]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-gateway" },
+                    "end": { "id": "rect-db" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "only the API Gateway rectangle is deleted",
+            "cascaded deletion of connected arrows is handled automatically by the system"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [{ "id": "rect-gateway" }]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "delete"
+    },
+    {
+        "id": "delete-by-description",
+        "input": "Remove all the ellipses from the diagram",
+        "seed": {
+            "userPrompt": "Draw a rectangle labeled API, an ellipse labeled Auth, an ellipse labeled DB, and a rectangle labeled Frontend",
+            "agentResponse": "Created API and Frontend rectangles, and Auth and DB ellipses.",
+            "elements": [
+                {
+                    "id": "rect-api",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "API" }
+                },
+                {
+                    "id": "ellipse-auth",
+                    "type": "ellipse",
+                    "x": 380,
+                    "y": 100,
+                    "width": 120,
+                    "height": 120,
+                    "label": { "text": "Auth" }
+                },
+                {
+                    "id": "ellipse-db",
+                    "type": "ellipse",
+                    "x": 580,
+                    "y": 100,
+                    "width": 120,
+                    "height": 120,
+                    "label": { "text": "DB" }
+                },
+                {
+                    "id": "rect-frontend",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 300,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Frontend" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "both ellipses Auth and DB are deleted",
+            "rectangles API and Frontend are NOT deleted"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [
+                            { "id": "ellipse-auth" },
+                            { "id": "ellipse-db" }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "medium",
+        "category": "delete"
+    },
+    {
+        "id": "delete-selective",
+        "input": "Delete only the No arrow and the Fix rectangle from the diagram",
+        "seed": {
+            "userPrompt": "Draw a flowchart: diamond Done?, rectangle End with a Yes arrow, rectangle Fix with a No arrow",
+            "agentResponse": "Created a decision flowchart with Done? diamond, End and Fix rectangles, and labeled Yes/No arrows.",
+            "elements": [
+                {
+                    "id": "diamond-done",
+                    "type": "diamond",
+                    "x": 100,
+                    "y": 100,
+                    "width": 120,
+                    "height": 120,
+                    "label": { "text": "Done?" }
+                },
+                {
+                    "id": "rect-end",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 120,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "End" }
+                },
+                {
+                    "id": "rect-fix",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 300,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Fix" }
+                },
+                {
+                    "id": "arrow-yes",
+                    "type": "arrow",
+                    "x": 220,
+                    "y": 160,
+                    "label": { "text": "Yes" },
+                    "points": [[0, 0], [160, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "diamond-done" },
+                    "end": { "id": "rect-end" }
+                },
+                {
+                    "id": "arrow-no",
+                    "type": "arrow",
+                    "x": 220,
+                    "y": 160,
+                    "label": { "text": "No" },
+                    "points": [[0, 0], [160, 180]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "diamond-done" },
+                    "end": { "id": "rect-fix" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "the No arrow and Fix rectangle are deleted",
+            "the Done? diamond, End rectangle, and Yes arrow remain"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [
+                            { "id": "arrow-no" },
+                            { "id": "rect-fix" }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "hard",
+        "category": "delete"
+    },
+    {
+        "id": "delete-intermediate-node",
+        "input": "Remove the Process rectangle from the chain but keep Start and End connected by adding a new arrow between them",
+        "seed": {
+            "userPrompt": "Draw three rectangles Start, Process, End with arrows Start to Process and Process to End",
+            "agentResponse": "Created Start, Process, End chain with connecting arrows.",
+            "elements": [
+                {
+                    "id": "rect-start",
+                    "type": "rectangle",
+                    "x": 100,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Start" }
+                },
+                {
+                    "id": "rect-process",
+                    "type": "rectangle",
+                    "x": 380,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Process" }
+                },
+                {
+                    "id": "rect-end",
+                    "type": "rectangle",
+                    "x": 660,
+                    "y": 100,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "End" }
+                },
+                {
+                    "id": "arrow-start-proc",
+                    "type": "arrow",
+                    "x": 300,
+                    "y": 140,
+                    "points": [[0, 0], [80, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-start" },
+                    "end": { "id": "rect-process" }
+                },
+                {
+                    "id": "arrow-proc-end",
+                    "type": "arrow",
+                    "x": 580,
+                    "y": 140,
+                    "points": [[0, 0], [80, 0]],
+                    "startArrowhead": "none",
+                    "endArrowhead": "arrow",
+                    "start": { "id": "rect-process" },
+                    "end": { "id": "rect-end" }
+                }
+            ]
+        },
+        "expectedCharacteristics": [
+            "the Process rectangle is deleted (cascade removes its arrows)",
+            "a new arrow is drawn from Start to End"
+        ],
+        "expected": {
+            "toolCalls": [
+                {
+                    "toolName": "deleteElements",
+                    "requiredArguments": {
+                        "elements": [{ "id": "rect-process" }]
+                    }
+                },
+                {
+                    "toolName": "drawElements",
+                    "requiredArguments": {
+                        "elements": [
+                            {
+                                "type": "arrow",
+                                "id": { "__matcher__": "exists" },
+                                "start": { "id": "rect-start" },
+                                "end": { "id": "rect-end" }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "difficulty": "hard",
+        "category": "multi"
     }
 ]

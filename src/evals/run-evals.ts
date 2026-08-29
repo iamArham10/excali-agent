@@ -2,6 +2,11 @@ import { Eval } from "braintrust";
 import { readFileSync } from "node:fs";
 import { runAgentForEval } from "../server/agent-core";
 import { argumentSelectionScorer } from "./scorers/argumentSelectionScorer";
+import { arrowBindingScorer } from "./scorers/arrowBindingScorer";
+import { duplicateIdScorer } from "./scorers/duplicateIdScorer";
+import { gridAlignmentScorer } from "./scorers/gridAlignmentScorer";
+import { labelCompletenessScorer } from "./scorers/labelCompletenessScorer";
+import { noOverlapScorer } from "./scorers/noOverlapScorer";
 import { toolSelectionScorer } from "./scorers/toolSelectionScorer";
 
 import { toolSelectionGoldenDatasetType } from "./types";
@@ -15,8 +20,11 @@ const datasetPath = new URL(
 const rawData: unknown = JSON.parse(readFileSync(datasetPath, "utf-8"));
 const toolSelectionTestCases = toolSelectionGoldenDatasetType.parse(rawData);
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 Eval("excali-agent", {
-    experimentName: "tool-selection",
+    experimentName: "diagram-agent-bench",
+    maxConcurrency: 3,
     data: toolSelectionTestCases.map((testCase) => {
         return {
             input: testCase,
@@ -29,6 +37,7 @@ Eval("excali-agent", {
         };
     }),
     task: async (testCase) => {
+        await sleep(2000);
         const result = await runAgentForEval({
             messages: buildMessages(testCase),
             canvasState: "",
@@ -41,5 +50,13 @@ Eval("excali-agent", {
             testCaseCategory: testCase.category,
         };
     },
-    scores: [toolSelectionScorer, argumentSelectionScorer],
+    scores: [
+        toolSelectionScorer,
+        argumentSelectionScorer,
+        arrowBindingScorer,
+        gridAlignmentScorer,
+        labelCompletenessScorer,
+        duplicateIdScorer,
+        noOverlapScorer,
+    ],
 });
