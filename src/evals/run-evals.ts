@@ -31,6 +31,7 @@ Eval("excali-agent", {
     task: async (testCase) => {
         const result = await runAgentForEval({
             messages: buildMessages(testCase),
+            canvasState: "",
         });
         return {
             text: result.text,

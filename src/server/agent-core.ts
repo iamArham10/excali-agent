@@ -172,35 +172,43 @@ Do NOT do this (redundant, and arrow-a-b may no longer exist by the time this ex
 - Before finalizing, sanity-check: every coordinate is a multiple of 10, every arrow has two valid bindings,
   both endpoints sit on shape boundaries (not centers), every shape has a label, no ids collide, no elements
   overlap, and every arrowhead field is set (defaulting to none/arrow unless the diagram convention needs otherwise).
+- After doing the work, please respond with a small note, one to two lines like "I have created the..."
 `;
 
 const DEFAULT_MAX_STEPS = 5;
 
 const DEFAULT_PROVIDER_OPTIONS: ProviderOptions = {
     openai: {
-        reasoningSummary: "auto",
+        reasoningSummary: "detailed",
     },
 };
 
 const DEFAULT_MODEL = "gpt-5.6-luna";
+
 type AgentArgs = {
     model?: LanguageModel;
     messages: ModelMessage[];
+    canvasState: string;
     systemInstructions?: string;
     maxSteps?: number;
     providerOptions?: ProviderOptions;
 };
 
+function buildSystemPrompt(instructions: string, canvasState: string): string {
+    return `${instructions}\n\n Current Canvas State: ${canvasState}`
+}
+
 export async function streamAgent({
     model = openai(DEFAULT_MODEL),
     messages,
+    canvasState = "",
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
     providerOptions = DEFAULT_PROVIDER_OPTIONS,
 }: AgentArgs) {
     return streamText({
         model: model,
-        system: systemInstructions,
+        system: buildSystemPrompt(systemInstructions, canvasState),
         messages,
         tools: tools,
         stopWhen: stepCountIs(maxSteps),
@@ -212,13 +220,16 @@ export async function streamAgent({
 export async function runAgentForEval({
     model = openai(DEFAULT_MODEL),
     messages,
+    canvasState = "",
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
     providerOptions = DEFAULT_PROVIDER_OPTIONS,
 }: AgentArgs) {
+
     const result = await streamAgent({
         model,
         messages,
+        canvasState,
         systemInstructions,
         maxSteps,
         providerOptions,

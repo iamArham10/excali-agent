@@ -8,6 +8,7 @@ import MessageList from "./components/MessageList";
 import { getToolName, isToolUIPart } from "ai";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import { useExcaliDrawHook } from "./hooks/useExcaliDrawHook";
+import { serializeCanvasState } from "./services/createCanvasState";
 
 const sessionId = crypto.randomUUID();
 
@@ -15,6 +16,15 @@ export default function App() {
     const agent = useAgent({ agent: "ExcaliAgent", name: sessionId });
     const { messages, sendMessage, status, clearHistory } = useAgentChat({
         agent,
+        prepareSendMessagesRequest: async () => {
+            return {
+                body: {
+                    canvasState: api
+                        ? serializeCanvasState(service.getCanvasState())
+                        : "canvas is empty",
+                },
+            };
+        },
     });
     const [input, setInput] = useState("");
     const alreadyExecuted = useRef<Set<string>>(new Set());

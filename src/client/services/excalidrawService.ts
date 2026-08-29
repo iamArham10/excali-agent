@@ -7,14 +7,7 @@ import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/tran
 import type { ElementUpdate } from "@excalidraw/excalidraw/element/mutateElement";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { normalizeArrowSkeletons } from "./normalizeArrowSkeletons";
-
-function downloadJSON(data: unknown, filename = "result.json") {
-    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
+import { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 
 export class ExcaliDrawService {
     constructor(
@@ -24,6 +17,10 @@ export class ExcaliDrawService {
     private get api() {
         if (!this.apiRef.current) throw new Error("apiRef is not initialized");
         return this.apiRef.current;
+    }
+
+    getCanvasState() {
+        return this.api.getSceneElements() as ExcalidrawElement[];
     }
 
     createElements(skeletons: ExcalidrawElementSkeleton[]) {
@@ -93,38 +90,45 @@ export class ExcaliDrawService {
 
     deleteElements(elementsToDelete: { id: string }[]) {
         const elements = this.api.getSceneElements();
-        const toDelete = new Set(elementsToDelete.map(({ id }) => id));
 
+        const dependents = new Map<string, string[]>();
         for (const el of elements) {
-            if (
-                el.type === "text" &&
-                el.containerId &&
-                toDelete.has(el.containerId)
-            ) {
-                toDelete.add(el.id);
+            const referencedIds = [
+                ...(el.type === "text" && el.containerId
+                    ? [el.containerId]
+                    : []),
+                ...(el.type === "arrow"
+                    ? [
+                          el.startBinding?.elementId,
+                          el.endBinding?.elementId,
+                      ].filter((id): id is string => id != null)
+                    : []),
+            ];
+            for (const referencedId of referencedIds) {
+                const deps = dependents.get(referencedId);
+                if (deps) {
+                    deps.push(el.id);
+                } else {
+                    dependents.set(referencedId, [el.id]);
+                }
             }
         }
 
-        const updated = elements.map((el) => {
-            if (toDelete.has(el.id)) {
-                return newElementWith(el, { isDeleted: true });
+        const toDelete = new Set(elementsToDelete.map(({ id }) => id));
+        const queue = [...toDelete];
+        while (queue.length) {
+            const id = queue.pop();
+            for (const dependentId of dependents.get(id!) ?? []) {
+                if (!toDelete.has(dependentId)) {
+                    toDelete.add(dependentId);
+                    queue.push(dependentId);
+                }
             }
-            if (el.type === "arrow") {
-                const changes = {
-                    ...(el.startBinding &&
-                        toDelete.has(el.startBinding.elementId)
-                        ? { startBinding: null }
-                        : {}),
-                    ...(el.endBinding && toDelete.has(el.endBinding.elementId)
-                        ? { endBinding: null }
-                        : {}),
-                };
-                return Object.keys(changes).length
-                    ? newElementWith(el, changes)
-                    : el;
-            }
-            return el;
-        });
+        }
+
+        const updated = elements.map((el) =>
+            toDelete.has(el.id) ? newElementWith(el, { isDeleted: true }) : el,
+        );
 
         this.api.updateScene({ elements: updated });
         return { deletedIds: [...toDelete] };

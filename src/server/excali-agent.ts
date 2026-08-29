@@ -8,9 +8,18 @@ import {
 import { streamAgent } from "./agent-core";
 
 export class ExcaliAgent extends AIChatAgent {
-    async onChatMessage() {
+    async onChatMessage(
+        _onFinish: Parameters<AIChatAgent["onChatMessage"]>[0],
+        options?: { body?: Record<string, unknown> },
+    ) {
+        const canvasState =
+            typeof options?.body?.canvasState === "string"
+                ? options.body.canvasState
+                : "";
+
         const response = await streamAgent({
             messages: await convertToModelMessages(this.messages),
+            canvasState,
         });
 
         return createUIMessageStreamResponse({
