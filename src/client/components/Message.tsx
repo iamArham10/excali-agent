@@ -16,20 +16,20 @@ export default function Message({ message }: MessageProps) {
                 className={`max-w-[75%] rounded-2xl px-4 py-2 ${isUser ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-900"}`}
             >
                 {message.parts.map((part, index) => {
-                    if (part.type === "text") {
-                        return (
-                            <MarkdownRenderer key={index} content={part.text} />
-                        );
-                    } else if (part.type === "reasoning") {
-                        if (hasText) return null;
-                        return (
-                            <div className="flex flex-col gap-0.5">
-                                <em className="text-blue-400">{part.text}</em>
-                                <ThinkingDots />
-                            </div>
-                        );
-                    }
-                })}
+                        if (part.type === "text") {
+                            return (
+                                <MarkdownRenderer key={index} content={part.text} />
+                            );
+                        } else if (part.type === "reasoning") {
+                            if (hasText) return null;
+                            return (
+                                <div className="flex flex-col gap-0.5">
+                                    <em className="text-blue-400">{part.text}</em>
+                                    <ThinkingDots />
+                                </div>
+                            );
+                        }
+                    })}
             </div>
         </div>
     );

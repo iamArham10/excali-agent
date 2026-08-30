@@ -1,4 +1,5 @@
 import { tool } from "ai";
+import { z } from "zod";
 
 import {
     DeleteElementsToolSchema,
@@ -28,10 +29,17 @@ const deleteElements = tool({
     inputSchema: DeleteElementsToolSchema,
 });
 
+const getCanvasState = tool({
+    description:
+        "Get Canvas State, the elements currently on the canvas",
+    inputSchema: z.object({}),
+})
+
 const tools = {
     drawElements,
     modifyElements,
     deleteElements,
+    getCanvasState,
 };
 
 export { tools };

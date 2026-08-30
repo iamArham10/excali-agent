@@ -188,27 +188,21 @@ const DEFAULT_MODEL = "gpt-5.6-luna";
 type AgentArgs = {
     model?: LanguageModel;
     messages: ModelMessage[];
-    canvasState: string;
     systemInstructions?: string;
     maxSteps?: number;
     providerOptions?: ProviderOptions;
 };
 
-function buildSystemPrompt(instructions: string, canvasState: string): string {
-    return `${instructions}\n\n Current Canvas State: ${canvasState}`
-}
-
 export async function streamAgent({
     model = openai(DEFAULT_MODEL),
     messages,
-    canvasState = "",
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
     providerOptions = DEFAULT_PROVIDER_OPTIONS,
 }: AgentArgs) {
     return streamText({
         model: model,
-        system: buildSystemPrompt(systemInstructions, canvasState),
+        system: systemInstructions,
         messages,
         tools: tools,
         stopWhen: stepCountIs(maxSteps),
@@ -220,7 +214,6 @@ export async function streamAgent({
 export async function runAgentForEval({
     model = openai(DEFAULT_MODEL),
     messages,
-    canvasState = "",
     systemInstructions = SYSTEM_INSTRUCTIONS,
     maxSteps = DEFAULT_MAX_STEPS,
     providerOptions = DEFAULT_PROVIDER_OPTIONS,
@@ -229,7 +222,6 @@ export async function runAgentForEval({
     const result = await streamAgent({
         model,
         messages,
-        canvasState,
         systemInstructions,
         maxSteps,
         providerOptions,

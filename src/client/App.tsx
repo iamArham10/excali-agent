@@ -1,11 +1,10 @@
 import "@excalidraw/excalidraw/index.css";
 import { Excalidraw } from "@excalidraw/excalidraw";
-import { getToolCallId, useAgentChat } from "@cloudflare/ai-chat/react";
+import { useAgentChat } from "@cloudflare/ai-chat/react";
 import { useAgent } from "agents/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChatInput } from "./components/ChatInput";
 import MessageList from "./components/MessageList";
-import { getToolName, isToolUIPart } from "ai";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import { useExcaliDrawHook } from "./hooks/useExcaliDrawHook";
 import { serializeCanvasState } from "./services/createCanvasState";
@@ -16,23 +15,26 @@ export default function App() {
     const agent = useAgent({ agent: "ExcaliAgent", name: sessionId });
     const { messages, sendMessage, status, clearHistory } = useAgentChat({
         agent,
-        prepareSendMessagesRequest: async () => {
-            return {
-                body: {
-                    canvasState: api
-                        ? serializeCanvasState(service.getCanvasState())
-                        : "canvas is empty",
-                },
-            };
-        },
         onToolCall: async ({ toolCall, addToolOutput }) => {
+            const toolName = toolCall.toolName;
+
+            if (toolCall.toolName === "getCanvasState") {
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId,
+                    output: `${api ? serializeCanvasState(service.getCanvasState()) : "canvas is empty"}`,
+                });
+            }
+
             if (toolCall.toolName === "drawElements") {
-                const { elements } = toolCall.input as { elements: ExcalidrawElementSkeleton[] }
-                service.createElements(elements)
+                const { elements } = toolCall.input as {
+                    elements: ExcalidrawElementSkeleton[];
+                };
+                service.createElements(elements);
 
                 addToolOutput({
-                    toolCallId: toolCall.toolCallId, output: `created ${elements.length} new elements`
-                })
+                    toolCallId: toolCall.toolCallId,
+                    output: `created ${elements.length} new elements`,
+                });
             }
 
             if (toolCall.toolName === "deleteElements") {
@@ -43,10 +45,10 @@ export default function App() {
                 service.deleteElements(elements);
 
                 addToolOutput({
-                    toolCallId: toolCall.toolCallId, output: `deleted ${elements.length} new elements`
-                })
+                    toolCallId: toolCall.toolCallId,
+                    output: `deleted ${elements.length} new elements`,
+                });
             }
-
 
             if (toolCall.toolName === "modifyElements") {
                 let elements = (
@@ -61,48 +63,18 @@ export default function App() {
                 service.modifyElements(elements);
 
                 addToolOutput({
-                    toolCallId: toolCall.toolCallId, output: `modified ${elements.length} new elements`
-                })
+                    toolCallId: toolCall.toolCallId,
+                    output: `modified ${elements.length} new elements`,
+                });
             }
-        }
+        },
     });
     const [input, setInput] = useState("");
-    const alreadyExecuted = useRef<Set<string>>(new Set());
     const { bindApi, service, api } = useExcaliDrawHook();
 
     useEffect(() => {
         clearHistory();
     }, []);
-
-    useEffect(() => {
-        if (!api) return;
-
-        for (const message of messages) {
-            if (message.role !== "assistant") continue;
-            for (const part of message.parts) {
-                if (!isToolUIPart(part)) continue;
-                if (part.state !== "output-available") continue;
-                const toolName = getToolName(part);
-                const toolId = getToolCallId(part);
-                if (alreadyExecuted.current.has(toolId)) continue;
-                alreadyExecuted.current.add(toolId);
-
-
-                if (toolName === "modifyElements") {
-                    const elements = (
-                        part.output as {
-                            elements: ({
-                                id: string;
-                                label?: { text: string };
-                            } & Partial<ExcalidrawElementSkeleton>)[];
-                        }
-                    ).elements;
-                    service.modifyElements(elements);
-                }
-
-            }
-        }
-    }, [messages, api]);
 
     return (
         <div className="flex h-screen">
