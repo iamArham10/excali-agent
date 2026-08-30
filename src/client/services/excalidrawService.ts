@@ -40,12 +40,20 @@ export class ExcaliDrawService {
         this.api.scrollToContent(elements, { fitToContent: true });
     }
 
+    private stripUndefined<T extends object>(obj: T): T {
+        return Object.fromEntries(
+            Object.entries(obj).filter(([, value]) => value !== undefined)
+        ) as T;
+    }
+
     modifyElements(
         modifiedElementsSkeletons: ({
             id: string;
             label?: { text: string };
         } & Partial<ExcalidrawElementSkeleton>)[],
     ) {
+        modifiedElementsSkeletons = this.stripUndefined(modifiedElementsSkeletons)
+
         const elements = this.api.getSceneElements();
         const updateById = new Map(
             modifiedElementsSkeletons.map((u) => [u.id, u]),
@@ -99,9 +107,9 @@ export class ExcaliDrawService {
                     : []),
                 ...(el.type === "arrow"
                     ? [
-                          el.startBinding?.elementId,
-                          el.endBinding?.elementId,
-                      ].filter((id): id is string => id != null)
+                        el.startBinding?.elementId,
+                        el.endBinding?.elementId,
+                    ].filter((id): id is string => id != null)
                     : []),
             ];
             for (const referencedId of referencedIds) {

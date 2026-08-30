@@ -25,6 +25,46 @@ export default function App() {
                 },
             };
         },
+        onToolCall: async ({ toolCall, addToolOutput }) => {
+            if (toolCall.toolName === "drawElements") {
+                const { elements } = toolCall.input as { elements: ExcalidrawElementSkeleton[] }
+                service.createElements(elements)
+
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId, output: `created ${elements.length} new elements`
+                })
+            }
+
+            if (toolCall.toolName === "deleteElements") {
+                const { elements } = toolCall.input as {
+                    elements: { id: string }[];
+                };
+
+                service.deleteElements(elements);
+
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId, output: `deleted ${elements.length} new elements`
+                })
+            }
+
+
+            if (toolCall.toolName === "modifyElements") {
+                let elements = (
+                    toolCall.input as {
+                        elements: ({
+                            id: string;
+                            label?: { text: string };
+                        } & Partial<ExcalidrawElementSkeleton>)[];
+                    }
+                ).elements;
+
+                service.modifyElements(elements);
+
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId, output: `modified ${elements.length} new elements`
+                })
+            }
+        }
     });
     const [input, setInput] = useState("");
     const alreadyExecuted = useRef<Set<string>>(new Set());
@@ -47,14 +87,6 @@ export default function App() {
                 if (alreadyExecuted.current.has(toolId)) continue;
                 alreadyExecuted.current.add(toolId);
 
-                if (toolName === "drawElements") {
-                    const elements = (
-                        part.output as {
-                            elements: ExcalidrawElementSkeleton[];
-                        }
-                    ).elements;
-                    service.createElements(elements);
-                }
 
                 if (toolName === "modifyElements") {
                     const elements = (
@@ -68,12 +100,6 @@ export default function App() {
                     service.modifyElements(elements);
                 }
 
-                if (toolName === "deleteElements") {
-                    const { elements } = part.output as {
-                        elements: { id: string }[];
-                    };
-                    service.deleteElements(elements);
-                }
             }
         }
     }, [messages, api]);

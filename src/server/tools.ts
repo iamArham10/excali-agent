@@ -12,28 +12,12 @@ const drawElements = tool({
         "ellipse, diamond) and text elements. Elements can reference each " +
         "other by id within the same call.",
     inputSchema: DrawElementsToolSchema,
-    execute: async ({ elements }) => {
-        return { elements };
-    },
 });
 
 const modifyElements = tool({
     description:
         "modify one or more elements on the canvas. use id to reference elements, and make sure to include type as well.",
     inputSchema: ModifyElementsToolSchema,
-    execute: async ({ elements }) => {
-        return {
-            // strip out absent optional attributes so only actually-provided
-            // fields are shipped to the client
-            elements: elements.map((e) =>
-                Object.fromEntries(
-                    Object.entries(e).filter(
-                        ([, value]) => value !== undefined,
-                    ),
-                ),
-            ),
-        };
-    },
 });
 
 const deleteElements = tool({
@@ -42,9 +26,6 @@ const deleteElements = tool({
         "Also deletes labels bound to the deleted elements and any arrows " +
         "connected to them.",
     inputSchema: DeleteElementsToolSchema,
-    execute: async ({ elements }) => {
-        return { elements };
-    },
 });
 
 const tools = {
