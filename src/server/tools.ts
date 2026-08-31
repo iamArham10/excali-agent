@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { webSearchTool } from "./web-search-tool";
 
 import {
     DeleteElementsToolSchema,
@@ -40,6 +41,7 @@ const tools = {
     modifyElements,
     deleteElements,
     getCanvasState,
+    webSearchTool
 };
 
 export { tools };
