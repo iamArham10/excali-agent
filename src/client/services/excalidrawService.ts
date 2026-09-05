@@ -12,7 +12,7 @@ import { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 export class ExcaliDrawService {
     constructor(
         private apiRef: React.RefObject<ExcalidrawImperativeAPI | null>,
-    ) { }
+    ) {}
 
     private get api() {
         if (!this.apiRef.current) throw new Error("apiRef is not initialized");
@@ -21,6 +21,15 @@ export class ExcaliDrawService {
 
     getCanvasState() {
         return this.api.getSceneElements() as ExcalidrawElement[];
+    }
+
+    clearCanvas() {
+        try {
+            this.api.resetScene();
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     createElements(skeletons: ExcalidrawElementSkeleton[]) {
@@ -42,7 +51,7 @@ export class ExcaliDrawService {
 
     private stripUndefined<T extends object>(obj: T): T {
         return Object.fromEntries(
-            Object.entries(obj).filter(([, value]) => value !== undefined)
+            Object.entries(obj).filter(([, value]) => value !== undefined),
         ) as T;
     }
 
@@ -52,7 +61,9 @@ export class ExcaliDrawService {
             label?: { text: string };
         } & Partial<ExcalidrawElementSkeleton>)[],
     ) {
-        modifiedElementsSkeletons = this.stripUndefined(modifiedElementsSkeletons)
+        modifiedElementsSkeletons = this.stripUndefined(
+            modifiedElementsSkeletons,
+        );
 
         const elements = this.api.getSceneElements();
         const updateById = new Map(
@@ -71,10 +82,7 @@ export class ExcaliDrawService {
 
             if (update) {
                 const { id, label, ...changes } = update;
-                return newElementWith(
-                    el,
-                    changes as ElementUpdate<typeof el>,
-                );
+                return newElementWith(el, changes as ElementUpdate<typeof el>);
             }
 
             if (el.type === "text" && el.containerId) {
@@ -107,9 +115,9 @@ export class ExcaliDrawService {
                     : []),
                 ...(el.type === "arrow"
                     ? [
-                        el.startBinding?.elementId,
-                        el.endBinding?.elementId,
-                    ].filter((id): id is string => id != null)
+                          el.startBinding?.elementId,
+                          el.endBinding?.elementId,
+                      ].filter((id): id is string => id != null)
                     : []),
             ];
             for (const referencedId of referencedIds) {

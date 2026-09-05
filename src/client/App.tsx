@@ -16,7 +16,12 @@ export default function App() {
     const { messages, sendMessage, status, clearHistory } = useAgentChat({
         agent,
         onToolCall: async ({ toolCall, addToolOutput }) => {
-            const toolName = toolCall.toolName;
+            if (toolCall.toolName === "clearCanvas") {
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId,
+                    output: `${service.clearCanvas() ? "Canvas Cleared" : "Could not clear the canvas"}`,
+                });
+            }
 
             if (toolCall.toolName === "getCanvasState") {
                 addToolOutput({

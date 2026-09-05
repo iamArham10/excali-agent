@@ -32,15 +32,20 @@ const deleteElements = tool({
 });
 
 const getCanvasState = tool({
-    description:
-        "Get Canvas State, the elements currently on the canvas",
+    description: "Get Canvas State, the elements currently on the canvas",
     inputSchema: z.object({}),
-})
+});
+
+const clearCanvas = tool({
+    description: "Clear the canvas, remove all elements",
+    inputSchema: z.object({}),
+});
 
 const tools = {
     drawElements,
     modifyElements,
     deleteElements,
+    clearCanvas,
     getCanvasState,
     webSearchTool,
     knowledgeSearchTool,
