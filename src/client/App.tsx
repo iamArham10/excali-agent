@@ -224,13 +224,7 @@ export default function App() {
                         <span />
                     </div>
                     <div className="header-copy">
-                        <div className="header-title-row">
-                            <h1>EXCALI</h1>
-                            <span className={`agent-status ${isBusy ? "is-busy" : ""}`}>
-                                <i aria-hidden="true" />
-                                {isBusy ? "Working" : "Ready"}
-                            </span>
-                        </div>
+                        <h1>EXCALI</h1>
                         <p>Diagram workspace</p>
                     </div>
                     <button
