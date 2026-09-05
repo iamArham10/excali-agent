@@ -1,6 +1,6 @@
 {
     "$schema": "./node_modules/wrangler/config-schema.json",
-    "name": "cloudflare-vite-get-started",
+    "name": "technical-drawing-agent",
     // Set this to today's date
     "compatibility_date": "2026-08-03",
     "compatibility_flags": ["nodejs_compat"],
