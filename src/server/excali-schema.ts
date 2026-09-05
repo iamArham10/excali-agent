@@ -1,7 +1,67 @@
 import { z } from "zod";
 
+const fontFamilySchema = z
+    .union([
+        z.literal(1),
+        z.literal(2),
+        z.literal(3),
+        z.literal(5),
+        z.literal(6),
+        z.literal(7),
+        z.literal(8),
+        z.literal(9),
+    ])
+    .describe(
+        "font family: 1 Virgil, 2 Helvetica, 3 Cascadia, 5 Excalifont, 6 Nunito, 7 Lilita One, 8 Comic Shanns, 9 Liberation Sans",
+    );
+
+const typographyFields = {
+    fontSize: z.number().min(1).optional().describe("font size in pixels"),
+    fontFamily: fontFamilySchema.optional(),
+    textAlign: z
+        .enum(["left", "center", "right"])
+        .optional()
+        .describe("horizontal text alignment"),
+    verticalAlign: z
+        .enum(["top", "middle", "bottom"])
+        .optional()
+        .describe("vertical text alignment"),
+};
+
+const styleFields = {
+    strokeColor: z
+        .string()
+        .optional()
+        .describe("stroke or text color as a hex color"),
+    backgroundColor: z
+        .string()
+        .optional()
+        .describe("fill color as a hex color or transparent"),
+    fillStyle: z
+        .enum(["solid", "hachure", "cross-hatch", "zigzag"])
+        .optional()
+        .describe("shape fill pattern"),
+    strokeWidth: z.number().min(0).optional().describe("stroke width in pixels"),
+    strokeStyle: z
+        .enum(["solid", "dashed", "dotted"])
+        .optional()
+        .describe("stroke pattern"),
+    roughness: z
+        .union([z.literal(0), z.literal(1), z.literal(2)])
+        .optional()
+        .describe("0 clean, 1 sketchy, 2 very sketchy"),
+    opacity: z
+        .number()
+        .min(0)
+        .max(100)
+        .optional()
+        .describe("element opacity from 0 to 100"),
+    angle: z.number().optional().describe("clockwise rotation in radians"),
+};
+
 const label = z.object({
     text: z.string().describe("text of the label"),
+    ...typographyFields,
 });
 
 const drawShapeElementSchema = z.object({
@@ -18,6 +78,7 @@ const drawShapeElementSchema = z.object({
     width: z.number().min(1).optional().describe("width of the shape"),
     height: z.number().min(1).optional().describe("height of the shape"),
     label: label.optional().describe("label to attach to the shape"),
+    ...styleFields,
 });
 
 const drawTextElementSchema = z.object({
@@ -30,6 +91,8 @@ const drawTextElementSchema = z.object({
     text: z.string().min(1).describe("the text content to draw on the canvas"),
     x: z.number().describe("top left x coordinate of the text"),
     y: z.number().describe("top left y coordinate of the text"),
+    ...typographyFields,
+    ...styleFields,
 });
 
 const pointSchema = z
@@ -37,15 +100,29 @@ const pointSchema = z
     .min(2).max(2)
     .describe(
         "An ordered list of [x, y] coordinate points that defines the path of the line or arrow. " +
-        "Coordinates MUST be relative to the arrow's x and y, never absolute canvas coordinates. " +
+        "Coordinates MUST be relative to the element's x and y, never absolute canvas coordinates. " +
         "The first point MUST be [0, 0]. The last point is the offset from the start to the end. " +
-        "The path must run from the shape in start.id toward the shape in end.id. " +
-        "Do not create bends, always create straight lines, give only two points a start and end," +
-        "Please make sure you arrow connects with the shapes both at starting and ending" +
-        "For connecting them property think about the elements position and then what offset should i use," +
-        "That will make arrow start-start from the edge of the start shape and arrow end-end to the end shape" +
+        "Do not create bends; always create straight lines with only a start and end point. " +
         "For a straight 200px rightward arrow use x/y for its canvas start and points [[0, 0], [200, 0]].",
     );
+
+const arrowheadSchema = z
+    .enum([
+        "arrow",
+        "bar",
+        "dot",
+        "circle",
+        "circle_outline",
+        "triangle",
+        "triangle_outline",
+        "diamond",
+        "diamond_outline",
+        "crowfoot_one",
+        "crowfoot_many",
+        "crowfoot_one_or_many",
+    ])
+    .nullable()
+    .describe("arrowhead shape, or null for no arrowhead");
 
 const drawArrowElementSchema = z.object({
     type: z.literal("arrow"),
@@ -62,12 +139,8 @@ const drawArrowElementSchema = z.object({
         .describe("canvas y coordinate of the arrow's first path point"),
     label: label.optional().describe("label to attach to the arrow"),
     points: pointSchema.optional(),
-    startArrowhead: z
-        .enum(["circle", "diamond", "arrow", "bar", "dot", "none"])
-        .describe("arrowhead shape at the start of the arrow"),
-    endArrowhead: z
-        .enum(["circle", "diamond", "arrow", "bar", "dot", "none"])
-        .describe("arrowhead shape at the end of the arrow"),
+    startArrowhead: arrowheadSchema,
+    endArrowhead: arrowheadSchema,
     start: z
         .object({
             id: z
@@ -88,22 +161,53 @@ const drawArrowElementSchema = z.object({
         .describe(
             "shape at the last path point; points must travel toward this shape",
         ),
+    ...styleFields,
 });
 
-const modifyShapeElementSchema = drawShapeElementSchema.partial().required({
-    id: true,
-    type: true,
+const drawLineElementSchema = z.object({
+    type: z.literal("line"),
+    id: z
+        .string()
+        .describe(
+            "id of the line element, choose unique id so you can later refer to the element",
+        ),
+    x: z.number().describe("canvas x coordinate of the line's first point"),
+    y: z.number().describe("canvas y coordinate of the line's first point"),
+    points: pointSchema,
+    label: label.optional().describe("label to attach to the line"),
+    ...styleFields,
 });
+
+const modifyLabel = label.partial();
+
+const modifyShapeElementSchema = drawShapeElementSchema
+    .partial()
+    .required({
+        id: true,
+        type: true,
+    })
+    .extend({ label: modifyLabel.optional() });
 
 const modifyTextElementSchema = drawTextElementSchema.partial().required({
     id: true,
     type: true,
 });
 
-const modifyArrowElementSchema = drawArrowElementSchema.partial().required({
-    id: true,
-    type: true,
-});
+const modifyArrowElementSchema = drawArrowElementSchema
+    .partial()
+    .required({
+        id: true,
+        type: true,
+    })
+    .extend({ label: modifyLabel.optional() });
+
+const modifyLineElementSchema = drawLineElementSchema
+    .partial()
+    .required({
+        id: true,
+        type: true,
+    })
+    .extend({ label: modifyLabel.optional() });
 
 const deleteElementSchema = z.object({
     id: z.string().describe("id of the element to delete"),
@@ -116,6 +220,7 @@ const DrawElementsToolSchema = z.object({
                 drawShapeElementSchema,
                 drawTextElementSchema,
                 drawArrowElementSchema,
+                drawLineElementSchema,
             ]),
         )
         .min(1)
@@ -129,6 +234,7 @@ const ModifyElementsToolSchema = z.object({
                 modifyShapeElementSchema,
                 modifyTextElementSchema,
                 modifyArrowElementSchema,
+                modifyLineElementSchema,
             ]),
         )
         .min(1)

@@ -12,14 +12,19 @@ import {
 const drawElements = tool({
     description:
         "Draw one or more elements on the canvas. Supports shapes (rectangle, " +
-        "ellipse, diamond) and text elements. Elements can reference each " +
-        "other by id within the same call.",
+        "ellipse, diamond), text, straight lines, and arrows. Elements support " +
+        "colors, fill and stroke styles, opacity, rotation, and typography. " +
+        "Shapes, lines, and arrows can have styled labels; arrows can reference " +
+        "shapes by id within the same call.",
     inputSchema: DrawElementsToolSchema,
 });
 
 const modifyElements = tool({
     description:
-        "modify one or more elements on the canvas. use id to reference elements, and make sure to include type as well.",
+        "Modify the geometry, text, labels, colors, fill and stroke styles, " +
+        "opacity, rotation, typography, or arrowheads of one or more existing " +
+        "elements. Use id to reference each element and always include its type. " +
+        "Only include properties that should change.",
     inputSchema: ModifyElementsToolSchema,
 });
 

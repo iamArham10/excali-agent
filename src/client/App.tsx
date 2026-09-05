@@ -93,7 +93,13 @@ export default function App() {
                     toolCall.input as {
                         elements: ({
                             id: string;
-                            label?: { text: string };
+                            label?: {
+                                text?: string;
+                                fontSize?: number;
+                                fontFamily?: number;
+                                textAlign?: "left" | "center" | "right";
+                                verticalAlign?: "top" | "middle" | "bottom";
+                            };
                         } & Partial<ExcalidrawElementSkeleton>)[];
                     }
                 ).elements;

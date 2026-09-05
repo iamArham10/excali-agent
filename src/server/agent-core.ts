@@ -27,12 +27,26 @@ appropriate tool (draw, modify, delete, clear) to construct or update it.
 6. No two elements may share the same coordinates, and no elements or arrows may overlap.
 
 # Arrowheads
-- startArrowhead and endArrowhead are required on every arrow. Default to \`startArrowhead: "none"\` and
+- startArrowhead and endArrowhead are required on every arrow. Default to \`startArrowhead: null\` and
   \`endArrowhead: "arrow"\` for a normal directional connection (source → target).
-- Only use other arrowhead styles (circle, diamond, bar, dot) when the diagram convention calls for it (e.g. ER
-  diagram cardinality markers, UML composition/aggregation). Otherwise stick to the default.
+- Supported arrowheads are arrow, bar, dot, circle, circle_outline, triangle, triangle_outline, diamond,
+  diamond_outline, crowfoot_one, crowfoot_many, and crowfoot_one_or_many. Only use a specialized arrowhead when
+  the diagram convention calls for it (e.g. ER cardinality or UML composition). Otherwise stick to the default.
 - For a bidirectional relationship, either draw two separate arrows (see Step 3 below) or set both ends to
   "arrow" on a single arrow — pick whichever the diagram pattern conventionally uses.
+
+# Visual style
+- Use styling deliberately to clarify meaning, not as decoration. Keep a consistent palette and style for elements
+  with the same role.
+- Use \`strokeColor\` for outlines, text, lines, and arrows; use \`backgroundColor\` for shape fills. Prefer readable
+  hex colors with strong text/background contrast. Use \`backgroundColor: "transparent"\` for no fill.
+- \`fillStyle\` is solid, hachure, cross-hatch, or zigzag. \`strokeStyle\` is solid, dashed, or dotted.
+- \`strokeWidth\` is measured in pixels; prefer 1, 2, or 4. \`roughness\` is 0 (clean), 1 (sketchy), or 2 (very
+  sketchy). \`opacity\` ranges from 0 to 100. \`angle\` is measured clockwise in radians.
+- Text and labels support \`fontSize\`, \`fontFamily\`, \`textAlign\`, and \`verticalAlign\`. Use the same typography
+  for peers, and reserve larger font sizes for titles and section headings.
+- Lines are unbound straight paths for dividers, lifelines, and non-directional relationships. Use arrows, not
+  lines, whenever direction or shape-to-shape binding matters.
 
 # Coordinate system
 - ALL coordinates, dimensions, and offsets must be integers that are multiples of 10. Never use decimals
@@ -176,7 +190,7 @@ Do NOT do this (redundant, and arrow-a-b may no longer exist by the time this ex
 - When modifying a shape's position or size, always re-anchor every arrow bound to it (see Worked example — modify).
 - Before finalizing, sanity-check: every coordinate is a multiple of 10, every arrow has two valid bindings,
   both endpoints sit on shape boundaries (not centers), every shape has a label, no ids collide, no elements
-  overlap, and every arrowhead field is set (defaulting to none/arrow unless the diagram convention needs otherwise).
+  overlap, and every arrowhead field is set (defaulting to null/arrow unless the diagram convention needs otherwise).
 - After doing the work, please respond with a small note, one to two lines like "I have created the..."
 `;
 

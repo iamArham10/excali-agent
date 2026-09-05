@@ -9,6 +9,14 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { normalizeArrowSkeletons } from "./normalizeArrowSkeletons";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 
+type LabelUpdate = {
+    text?: string;
+    fontSize?: number;
+    fontFamily?: number;
+    textAlign?: "left" | "center" | "right";
+    verticalAlign?: "top" | "middle" | "bottom";
+};
+
 export class ExcaliDrawService {
     constructor(
         private apiRef: React.RefObject<ExcalidrawImperativeAPI | null>,
@@ -58,7 +66,7 @@ export class ExcaliDrawService {
     modifyElements(
         modifiedElementsSkeletons: ({
             id: string;
-            label?: { text: string };
+            label?: LabelUpdate;
         } & Partial<ExcalidrawElementSkeleton>)[],
     ) {
         modifiedElementsSkeletons = this.stripUndefined(
@@ -70,10 +78,10 @@ export class ExcaliDrawService {
             modifiedElementsSkeletons.map((u) => [u.id, u]),
         );
 
-        const labelTextByContainerId = new Map<string, string>();
+        const labelUpdateByContainerId = new Map<string, LabelUpdate>();
         for (const update of modifiedElementsSkeletons) {
             if (update.label) {
-                labelTextByContainerId.set(update.id, update.label.text);
+                labelUpdateByContainerId.set(update.id, update.label);
             }
         }
 
@@ -86,14 +94,28 @@ export class ExcaliDrawService {
             }
 
             if (el.type === "text" && el.containerId) {
-                const containerLabelText = labelTextByContainerId.get(
+                const labelUpdate = labelUpdateByContainerId.get(
                     el.containerId,
                 );
 
-                if (containerLabelText !== undefined) {
+                if (labelUpdate !== undefined) {
+                    const {
+                        text,
+                        fontSize,
+                        fontFamily,
+                        textAlign,
+                        verticalAlign,
+                    } = labelUpdate;
                     return newElementWith(el, {
-                        text: containerLabelText,
-                        originalText: containerLabelText,
+                        ...(text === undefined
+                            ? {}
+                            : { text, originalText: text }),
+                        ...(fontSize === undefined ? {} : { fontSize }),
+                        ...(fontFamily === undefined ? {} : { fontFamily }),
+                        ...(textAlign === undefined ? {} : { textAlign }),
+                        ...(verticalAlign === undefined
+                            ? {}
+                            : { verticalAlign }),
                     });
                 }
             }
