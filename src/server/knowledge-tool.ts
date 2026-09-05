@@ -15,6 +15,7 @@ export const knowledgeSearchTool = tool({
             .default(4)
             .describe("How many related results you want, ranked by familiarity with given query."),
     }),
+    needsApproval: true,
     execute: async ({ query, topK }) => {
         try {
             const results = await vectorIndex.query({
