@@ -12,6 +12,7 @@ export const webSearchTool = tool({
         query: z.string().describe("The search query"),
         maxResults: z.number().min(1).max(10).optional().default(5),
     }),
+    needsApproval: true,
     execute: async ({ query, maxResults }) => {
         try {
             const result = await tavilyClient.search(query, {
