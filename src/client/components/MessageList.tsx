@@ -8,7 +8,29 @@ type MessageListProps = {
     toolDecisions?: Record<string, boolean>;
     onToolDecision?: (toolCallId: string, approved: boolean) => void;
     onToolApprovalResponse?: (options: { id: string; approved: boolean }) => void;
+    onPromptSelect?: (prompt: string) => void;
 };
+
+const STARTERS = [
+    {
+        code: "ARC",
+        title: "System architecture",
+        description: "Services, queues, stores, and boundaries",
+        prompt: "Create a system architecture diagram with services, data stores, external dependencies, and clearly labeled connections.",
+    },
+    {
+        code: "SEQ",
+        title: "Sequence diagram",
+        description: "Requests across system boundaries",
+        prompt: "Create a sequence diagram showing the actors, requests, responses, and failure paths.",
+    },
+    {
+        code: "FLOW",
+        title: "Request flow",
+        description: "Inputs, decisions, and outcomes",
+        prompt: "Create a technical request flow with inputs, processing steps, decision points, and outcomes.",
+    },
+];
 
 export default function MessageList({
     messages,
@@ -17,6 +39,7 @@ export default function MessageList({
     toolDecisions,
     onToolDecision,
     onToolApprovalResponse,
+    onPromptSelect,
 }: MessageListProps) {
     const isWorking = status === "submitted" || status === "streaming";
     const isWaitingForApproval =
@@ -32,17 +55,26 @@ export default function MessageList({
         <div className="message-list" aria-live="polite">
             {messages.length === 0 && (
                 <div className="empty-state">
-                    <div className="empty-state-icon" aria-hidden="true">
-                        ✦
-                    </div>
-                    <h2>What should we draw?</h2>
-                    <p>
-                        Ask for a flowchart, architecture diagram, mind map, or
-                        changes to your canvas.
-                    </p>
-                    <div className="prompt-examples" aria-label="Example prompts">
-                        <span>“Create a user login flow”</span>
-                        <span>“Draw a three-tier architecture”</span>
+                    <span className="empty-eyebrow">New diagram</span>
+                    <h2>Build a system diagram</h2>
+                    <p>Describe the components, boundaries, and relationships.</p>
+                    <div className="prompt-examples" aria-label="Diagram templates">
+                        {STARTERS.map((starter) => (
+                            <button
+                                type="button"
+                                key={starter.code}
+                                onClick={() => onPromptSelect?.(starter.prompt)}
+                            >
+                                <span className="prompt-code">{starter.code}</span>
+                                <span className="prompt-copy">
+                                    <strong>{starter.title}</strong>
+                                    <small>{starter.description}</small>
+                                </span>
+                                <span className="prompt-arrow" aria-hidden="true">
+                                    →
+                                </span>
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}
@@ -56,24 +88,26 @@ export default function MessageList({
                     onToolApprovalResponse={onToolApprovalResponse}
                 />
             ))}
-            {isWorking && !isWaitingForApproval && <ActivityIndicator />}
+            {isWorking && !isWaitingForApproval && <ActivityIndicator status={status} />}
             {status === "error" && (
                 <div className="chat-error" role="alert">
-                    <strong>Something went wrong.</strong>
-                    <span>Please try sending your request again.</span>
+                    <strong>Request failed</strong>
+                    <span>Check the connection and send the instruction again.</span>
                 </div>
             )}
         </div>
     );
 }
 
-function ActivityIndicator() {
+function ActivityIndicator({
+    status,
+}: {
+    status: "submitted" | "streaming" | "ready" | "error";
+}) {
     return (
         <div className="activity-indicator" role="status">
-            <span className="activity-spark" aria-hidden="true">
-                ✦
-            </span>
-            <span>Thinking</span>
+            <span className="activity-pulse" aria-hidden="true" />
+            <span>{status === "submitted" ? "Planning diagram" : "Updating canvas"}</span>
             <span className="thinking-dots" aria-hidden="true">
                 <i />
                 <i />

@@ -24,7 +24,7 @@ const TOOL_PRESENTATION: Record<string, ToolPresentation> = {
     drawElements: {
         title: "Draw elements",
         description: "Add new shapes and connections to the canvas.",
-        icon: "✦",
+        icon: "+",
     },
     modifyElements: {
         title: "Update elements",
@@ -91,11 +91,7 @@ export default function Message({
 
     return (
         <article className={`message ${isUser ? "message-user" : "message-assistant"}`}>
-            {!isUser && (
-                <div className="message-avatar" aria-hidden="true">
-                    ✦
-                </div>
-            )}
+            <div className="message-role">{isUser ? "You" : "Excali"}</div>
             <div className="message-body">
                 {message.parts.map((part, index) => {
                     if (part.type === "text") {
@@ -121,12 +117,12 @@ export default function Message({
                     const isPending = isClientPending || isServerPending;
                     const isSubmitting = submittingIds.has(part.toolCallId);
                     const decision = toolDecisions?.[part.toolCallId];
+                    const input =
+                        "input" in part
+                            ? (part.input as Record<string, unknown> | undefined)
+                            : undefined;
 
                     if (isPending) {
-                        const input =
-                            "input" in part
-                                ? (part.input as Record<string, unknown> | undefined)
-                                : undefined;
                         const detail = getToolDetail(toolName, input);
 
                         return (
@@ -209,7 +205,7 @@ export default function Message({
                             <ToolReceipt
                                 key={part.toolCallId || index}
                                 icon="✓"
-                                text={`${presentation.title} completed`}
+                                text={getCompletedToolText(toolName, presentation.title, input)}
                             />
                         );
                     }
@@ -292,4 +288,23 @@ function getToolDetail(
     }
 
     return null;
+}
+
+function getCompletedToolText(
+    toolName: string,
+    fallbackTitle: string,
+    input: Record<string, unknown> | undefined,
+) {
+    const count = Array.isArray(input?.elements) ? input.elements.length : null;
+
+    if (count !== null) {
+        const noun = count === 1 ? "element" : "elements";
+        if (toolName === "drawElements") return `Added ${count} ${noun}`;
+        if (toolName === "modifyElements") return `Updated ${count} ${noun}`;
+        if (toolName === "deleteElements") return `Removed ${count} ${noun}`;
+    }
+
+    if (toolName === "clearCanvas") return "Cleared canvas";
+    if (toolName === "getCanvasState") return "Read canvas state";
+    return `${fallbackTitle} completed`;
 }

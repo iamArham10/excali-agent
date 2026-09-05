@@ -29,6 +29,10 @@ export function ChatInput({
 
     useEffect(() => {
         resize();
+        if (value && document.activeElement !== textareaRef.current) {
+            textareaRef.current?.focus();
+            textareaRef.current?.setSelectionRange(value.length, value.length);
+        }
     }, [value]);
 
     function resize() {
@@ -46,7 +50,11 @@ export function ChatInput({
                     rows={1}
                     value={value}
                     onChange={handleChange}
-                    placeholder={busy ? "You can type while the assistant works…" : "Describe a diagram…"}
+                    placeholder={
+                        busy
+                            ? "You can prepare your next instruction…"
+                            : "Describe components, boundaries, and relationships…"
+                    }
                     className="composer-input hide-scrollbar"
                     onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
@@ -70,8 +78,8 @@ export function ChatInput({
 
             <p className="composer-help">
                 {busy
-                    ? "The assistant is working on your last request"
-                    : "Enter to send · Shift + Enter for a new line"}
+                    ? "Working on the previous request"
+                    : "↵ Send  ·  Shift ↵ New line"}
             </p>
         </form>
     );

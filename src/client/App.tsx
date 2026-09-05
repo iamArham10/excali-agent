@@ -2,7 +2,7 @@ import "@excalidraw/excalidraw/index.css";
 import { Excalidraw } from "@excalidraw/excalidraw";
 import { useAgentChat } from "@cloudflare/ai-chat/react";
 import { useAgent } from "agents/react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type CSSProperties } from "react";
 import { ChatInput } from "./components/ChatInput";
 import MessageList from "./components/MessageList";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
@@ -21,6 +21,9 @@ export default function App() {
     const { bindApi, service, api } = useExcaliDrawHook();
     const chatScrollRef = useRef<HTMLDivElement>(null);
     const shouldAutoScrollRef = useRef(true);
+    const [assistantWidth, setAssistantWidth] = useState(400);
+    const [isAssistantCollapsed, setIsAssistantCollapsed] = useState(false);
+    const [mobileView, setMobileView] = useState<"canvas" | "assistant">("canvas");
 
     const pendingResolversRef = useRef<Map<string, (approved: boolean) => void>>(new Map());
     const [pendingToolCallIds, setPendingToolCallIds] = useState<Set<string>>(new Set());
@@ -124,6 +127,27 @@ export default function App() {
     });
     const [input, setInput] = useState("");
     const isBusy = status === "submitted" || status === "streaming";
+    const workspaceStyle = {
+        "--assistant-width": `${assistantWidth}px`,
+    } as CSSProperties;
+
+    const beginResize = (event: React.PointerEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        const onPointerMove = (pointerEvent: PointerEvent) => {
+            setAssistantWidth(
+                Math.min(560, Math.max(340, window.innerWidth - pointerEvent.clientX)),
+            );
+        };
+        const stopResize = () => {
+            document.body.classList.remove("is-resizing");
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", stopResize);
+        };
+
+        document.body.classList.add("is-resizing");
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", stopResize);
+    };
 
     useEffect(() => {
         clearHistory();
@@ -148,19 +172,92 @@ export default function App() {
     );
 
     return (
-        <main className="app-shell">
+        <main
+            className={`app-shell ${isAssistantCollapsed ? "assistant-collapsed" : ""}`}
+            data-mobile-view={mobileView}
+            style={workspaceStyle}
+        >
+            <nav className="mobile-switch" aria-label="Workspace view">
+                <button
+                    type="button"
+                    className={mobileView === "canvas" ? "is-active" : ""}
+                    onClick={() => setMobileView("canvas")}
+                >
+                    Canvas
+                </button>
+                <button
+                    type="button"
+                    className={mobileView === "assistant" ? "is-active" : ""}
+                    onClick={() => setMobileView("assistant")}
+                >
+                    Assistant
+                    {isBusy && <span className="mobile-activity-dot" aria-label="Working" />}
+                </button>
+            </nav>
             <section className="canvas-panel" aria-label="Drawing canvas">
                 <Excalidraw excalidrawAPI={bindApi} />
             </section>
+            <div
+                className="panel-resize-handle"
+                role="separator"
+                aria-label="Resize assistant panel"
+                aria-orientation="vertical"
+                aria-valuemin={340}
+                aria-valuemax={560}
+                aria-valuenow={assistantWidth}
+                tabIndex={0}
+                onPointerDown={beginResize}
+                onKeyDown={(event) => {
+                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+                    event.preventDefault();
+                    const direction = event.key === "ArrowLeft" ? 16 : -16;
+                    setAssistantWidth((width) =>
+                        Math.min(560, Math.max(340, width + direction)),
+                    );
+                }}
+            />
             <aside className="chat-panel" aria-label="Diagram assistant">
                 <header className="chat-header">
-                    <div className="assistant-mark" aria-hidden="true">
-                        ✦
+                    <div className="brand-mark" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
                     </div>
-                    <div>
-                        <h1>Diagram assistant</h1>
-                        <p>Describe what you want to create</p>
+                    <div className="header-copy">
+                        <div className="header-title-row">
+                            <h1>EXCALI</h1>
+                            <span className={`agent-status ${isBusy ? "is-busy" : ""}`}>
+                                <i aria-hidden="true" />
+                                {isBusy ? "Working" : "Ready"}
+                            </span>
+                        </div>
+                        <p>Diagram workspace</p>
                     </div>
+                    <button
+                        type="button"
+                        className="panel-toggle"
+                        aria-label={
+                            isAssistantCollapsed
+                                ? "Expand assistant panel"
+                                : "Collapse assistant panel"
+                        }
+                        title={
+                            isAssistantCollapsed
+                                ? "Expand assistant panel"
+                                : "Collapse assistant panel"
+                        }
+                        onClick={() => setIsAssistantCollapsed((collapsed) => !collapsed)}
+                    >
+                        <svg viewBox="0 0 20 20" aria-hidden="true">
+                            <path
+                                d={
+                                    isAssistantCollapsed
+                                        ? "m7.5 5 5 5-5 5"
+                                        : "m12.5 5-5 5 5 5"
+                                }
+                            />
+                        </svg>
+                    </button>
                 </header>
 
                 <div
@@ -180,6 +277,10 @@ export default function App() {
                         toolDecisions={toolDecisions}
                         onToolDecision={handleToolDecision}
                         onToolApprovalResponse={addToolApprovalResponse}
+                        onPromptSelect={(prompt) => {
+                            setInput(prompt);
+                            setMobileView("assistant");
+                        }}
                     />
                 </div>
                 <ChatInput
