@@ -10,10 +10,17 @@ import { useExcaliDrawHook } from "./hooks/useExcaliDrawHook";
 import { serializeCanvasState } from "./services/createCanvasState";
 
 const sessionId = crypto.randomUUID();
+const AUTO_APPROVED_CLIENT_TOOLS = new Set([
+    "drawElements",
+    "modifyElements",
+    "getCanvasState",
+]);
 
 export default function App() {
     const agent = useAgent({ agent: "ExcaliAgent", name: sessionId });
     const { bindApi, service, api } = useExcaliDrawHook();
+    const chatScrollRef = useRef<HTMLDivElement>(null);
+    const shouldAutoScrollRef = useRef(true);
 
     const pendingResolversRef = useRef<Map<string, (approved: boolean) => void>>(new Map());
     const [pendingToolCallIds, setPendingToolCallIds] = useState<Set<string>>(new Set());
@@ -36,10 +43,12 @@ export default function App() {
     const { messages, sendMessage, status, clearHistory, addToolApprovalResponse } = useAgentChat({
         agent,
         onToolCall: async ({ toolCall, addToolOutput }) => {
-            const approved = await new Promise<boolean>((resolve) => {
-                pendingResolversRef.current.set(toolCall.toolCallId, resolve);
-                setPendingToolCallIds((prev) => new Set(prev).add(toolCall.toolCallId));
-            });
+            const approved = AUTO_APPROVED_CLIENT_TOOLS.has(toolCall.toolName)
+                ? true
+                : await new Promise<boolean>((resolve) => {
+                    pendingResolversRef.current.set(toolCall.toolCallId, resolve);
+                    setPendingToolCallIds((prev) => new Set(prev).add(toolCall.toolCallId));
+                });
 
             if (!approved) {
                 addToolOutput({
@@ -114,20 +123,59 @@ export default function App() {
         },
     });
     const [input, setInput] = useState("");
+    const isBusy = status === "submitted" || status === "streaming";
 
     useEffect(() => {
         clearHistory();
     }, []);
 
+    useEffect(() => {
+        if (!shouldAutoScrollRef.current) return;
+        chatScrollRef.current?.scrollTo({
+            top: chatScrollRef.current.scrollHeight,
+            behavior: status === "streaming" ? "auto" : "smooth",
+        });
+    }, [messages, pendingToolCallIds, status]);
+
+    useEffect(
+        () => () => {
+            for (const resolve of pendingResolversRef.current.values()) {
+                resolve(false);
+            }
+            pendingResolversRef.current.clear();
+        },
+        [],
+    );
+
     return (
-        <div className="flex h-screen">
-            <div className="w-4/5 h-screen">
+        <main className="app-shell">
+            <section className="canvas-panel" aria-label="Drawing canvas">
                 <Excalidraw excalidrawAPI={bindApi} />
-            </div>
-            <div className="w-2/5 flex flex-col m-5 rounded-2xl bg-white shadow-xl">
-                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            </section>
+            <aside className="chat-panel" aria-label="Diagram assistant">
+                <header className="chat-header">
+                    <div className="assistant-mark" aria-hidden="true">
+                        ✦
+                    </div>
+                    <div>
+                        <h1>Diagram assistant</h1>
+                        <p>Describe what you want to create</p>
+                    </div>
+                </header>
+
+                <div
+                    ref={chatScrollRef}
+                    className="chat-scroll"
+                    onScroll={(event) => {
+                        const element = event.currentTarget;
+                        const distanceFromBottom =
+                            element.scrollHeight - element.scrollTop - element.clientHeight;
+                        shouldAutoScrollRef.current = distanceFromBottom < 96;
+                    }}
+                >
                     <MessageList
                         messages={messages}
+                        status={status}
                         pendingToolCallIds={pendingToolCallIds}
                         toolDecisions={toolDecisions}
                         onToolDecision={handleToolDecision}
@@ -142,10 +190,11 @@ export default function App() {
                         if (!input.trim()) return;
                         sendMessage({ text: input });
                         setInput("");
+                        shouldAutoScrollRef.current = true;
                     }}
-                    disabled={status !== "ready"}
+                    busy={isBusy}
                 />
-            </div>
-        </div>
+            </aside>
+        </main>
     );
 }

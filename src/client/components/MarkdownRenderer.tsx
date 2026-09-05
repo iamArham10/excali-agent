@@ -9,25 +9,24 @@ type MarkdownRendererProp = {
 
 function MarkdownRenderer({ content }: MarkdownRendererProp) {
     return (
-        <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
-            components={{
-                a: ({ node, ...props }) => (
-                    <a {...props} target="_blank" rel="noopener noreferrer" />
-                ),
-                code: ({ node, className, children, ...props }) => (
-                    <code
-                        className={`${className ?? ""} rounded px-1`}
-                        {...props}
-                    >
-                        {children}
-                    </code>
-                ),
-            }}
-        >
-            {content}
-        </ReactMarkdown>
+        <div className="markdown">
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+                components={{
+                    a: ({ node, ...props }) => (
+                        <a {...props} target="_blank" rel="noopener noreferrer" />
+                    ),
+                    code: ({ node, className, children, ...props }) => (
+                        <code className={className ?? ""} {...props}>
+                            {children}
+                        </code>
+                    ),
+                }}
+            >
+                {content}
+            </ReactMarkdown>
+        </div>
     );
 }
 
