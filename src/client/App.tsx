@@ -2,7 +2,7 @@ import "@excalidraw/excalidraw/index.css";
 import { Excalidraw } from "@excalidraw/excalidraw";
 import { useAgentChat } from "@cloudflare/ai-chat/react";
 import { useAgent } from "agents/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChatInput } from "./components/ChatInput";
 import MessageList from "./components/MessageList";
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
@@ -13,9 +13,42 @@ const sessionId = crypto.randomUUID();
 
 export default function App() {
     const agent = useAgent({ agent: "ExcaliAgent", name: sessionId });
+    const { bindApi, service, api } = useExcaliDrawHook();
+
+    const pendingResolversRef = useRef<Map<string, (approved: boolean) => void>>(new Map());
+    const [pendingToolCallIds, setPendingToolCallIds] = useState<Set<string>>(new Set());
+    const [toolDecisions, setToolDecisions] = useState<Record<string, boolean>>({});
+
+    const handleToolDecision = (toolCallId: string, approved: boolean) => {
+        const resolver = pendingResolversRef.current.get(toolCallId);
+        if (resolver) {
+            resolver(approved);
+            pendingResolversRef.current.delete(toolCallId);
+            setPendingToolCallIds((prev) => {
+                const next = new Set(prev);
+                next.delete(toolCallId);
+                return next;
+            });
+            setToolDecisions((prev) => ({ ...prev, [toolCallId]: approved }));
+        }
+    };
+
     const { messages, sendMessage, status, clearHistory } = useAgentChat({
         agent,
         onToolCall: async ({ toolCall, addToolOutput }) => {
+            const approved = await new Promise<boolean>((resolve) => {
+                pendingResolversRef.current.set(toolCall.toolCallId, resolve);
+                setPendingToolCallIds((prev) => new Set(prev).add(toolCall.toolCallId));
+            });
+
+            if (!approved) {
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId,
+                    output: `Tool execution for "${toolCall.toolName}" was denied by user.`,
+                });
+                return;
+            }
+
             if (toolCall.toolName === "clearCanvas") {
                 addToolOutput({
                     toolCallId: toolCall.toolCallId,
@@ -75,7 +108,6 @@ export default function App() {
         },
     });
     const [input, setInput] = useState("");
-    const { bindApi, service, api } = useExcaliDrawHook();
 
     useEffect(() => {
         clearHistory();
@@ -88,7 +120,12 @@ export default function App() {
             </div>
             <div className="w-2/5 flex flex-col m-5 rounded-2xl bg-white shadow-xl">
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                    <MessageList messages={messages} />
+                    <MessageList
+                        messages={messages}
+                        pendingToolCallIds={pendingToolCallIds}
+                        toolDecisions={toolDecisions}
+                        onToolDecision={handleToolDecision}
+                    />
                 </div>
                 <ChatInput
                     value={input}
