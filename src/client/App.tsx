@@ -33,7 +33,7 @@ export default function App() {
         }
     };
 
-    const { messages, sendMessage, status, clearHistory } = useAgentChat({
+    const { messages, sendMessage, status, clearHistory, addToolApprovalResponse } = useAgentChat({
         agent,
         onToolCall: async ({ toolCall, addToolOutput }) => {
             const approved = await new Promise<boolean>((resolve) => {
@@ -125,6 +125,7 @@ export default function App() {
                         pendingToolCallIds={pendingToolCallIds}
                         toolDecisions={toolDecisions}
                         onToolDecision={handleToolDecision}
+                        onToolApprovalResponse={addToolApprovalResponse}
                     />
                 </div>
                 <ChatInput
