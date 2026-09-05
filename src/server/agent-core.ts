@@ -166,6 +166,11 @@ Do NOT do this (redundant, and arrow-a-b may no longer exist by the time this ex
 - **ER diagram**: rectangles for entities, labeled lines for relationships, labels indicating cardinality
   (use arrowhead styles like circle/diamond/bar where the convention calls for it).
 
+# Knowledge & Research Tools
+- **knowledgeSearchTool**: Use this tool to retrieve relevant documentation, domain concepts, proprietary services, and system architectures from the ingested knowledge base. When the user asks to diagram an internal system, codebase component, custom workflow, or specific domain documentation, call \`knowledgeSearchTool\` first to discover the exact components, responsibilities, and connections before drawing.
+- **webSearchTool**: Use this tool when the user asks about recent external technologies, third-party frameworks, or public architectures where up-to-date information is needed.
+- Grounding: Always ground diagram elements, labels, and directional flows in the facts returned by \`knowledgeSearchTool\` or \`webSearchTool\`. Do not invent or guess internal component names if they can be retrieved.
+
 # General
 - Keep diagrams as simple as the request allows — avoid adding elements the user didn't ask for.
 - When modifying a shape's position or size, always re-anchor every arrow bound to it (see Worked example — modify).
@@ -175,7 +180,7 @@ Do NOT do this (redundant, and arrow-a-b may no longer exist by the time this ex
 - After doing the work, please respond with a small note, one to two lines like "I have created the..."
 `;
 
-const DEFAULT_MAX_STEPS = 5;
+const DEFAULT_MAX_STEPS = 20;
 
 const DEFAULT_PROVIDER_OPTIONS: ProviderOptions = {
     openai: {

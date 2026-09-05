@@ -54,13 +54,30 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a `.dev.vars` file in the project root and add your OpenAI API key:
+Create a `.dev.vars` file in the project root and add your API keys and credentials:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional: Web search tool (Tavily)
+TAVILY_API_KEY=your_tavily_api_key_here
+
+# Optional: RAG Knowledge Base (Upstash Vector)
+UPSTASH_VECTOR_REST_URL=your_upstash_vector_rest_url
+UPSTASH_VECTOR_REST_TOKEN=your_upstash_vector_rest_token
 ```
 
-### 4. Run the development server
+### 4. Ingest knowledge base (optional)
+
+If using the RAG knowledge search tool, ingest markdown or code documentation into your Upstash Vector database:
+
+```bash
+npm run ingest -- <folder-path> [--reset]
+# Example:
+npm run ingest -- ./docs --reset
+```
+
+### 5. Run the development server
 
 ```bash
 npm run dev
@@ -75,3 +92,4 @@ Open your browser and go to `http://localhost:5173` to interact with the agent.
 - `npm run preview`: Preview the production build locally.
 - `npm run deploy`: Deploy the application to Cloudflare Workers.
 - `npm run test`: Run evaluation tests against the dataset.
+- `npm run ingest -- <folder-path>`: Ingest documentation/files into the Upstash Vector knowledge base.

@@ -8,7 +8,8 @@
         "build": "vite build",
         "preview": "npm run build && vite preview",
         "deploy": "npm run build && wrangler deploy",
-        "test": "npx tsx --env-file=.dev.vars src/evals/run-evals.ts"
+        "test": "npx tsx --env-file=.dev.vars src/evals/run-evals.ts",
+        "ingest": "npx tsx --env-file=.dev.vars src/server/ingest.ts"
     },
     "devDependencies": {
         "@cloudflare/vite-plugin": "^1.50.0",
@@ -16,6 +17,7 @@
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.4",
         "@vitejs/plugin-react": "^6.0.5",
+        "tsx": "^4.23.13",
         "typescript": "^7.0.2",
         "vite": "^8.2.0",
         "wrangler": "^4.118.0"
@@ -34,10 +36,13 @@
         "@tailwindcss/vite": "^4.3.3",
         "@tavily/core": "^0.7.8",
         "@toon-format/toon": "^4.1.1",
+        "@upstash/vector": "^1.2.3",
         "agents": "^0.20.1",
         "ai": "^7.0.51",
         "autoevals": "^0.0.132",
         "braintrust": "^3.28.0",
+        "glob": "^13.0.6",
+        "gray-matter": "^4.0.3",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
         "react-markdown": "^10.1.0",
