@@ -6,6 +6,7 @@ type MessageListProps = {
     pendingToolCallIds?: Set<string>;
     toolDecisions?: Record<string, boolean>;
     onToolDecision?: (toolCallId: string, approved: boolean) => void;
+    onToolApprovalResponse?: (options: { id: string; approved: boolean }) => void;
 };
 
 export default function MessageList({
@@ -13,6 +14,7 @@ export default function MessageList({
     pendingToolCallIds,
     toolDecisions,
     onToolDecision,
+    onToolApprovalResponse,
 }: MessageListProps) {
     return (
         <div className="flex flex-col gap-3">
@@ -23,6 +25,7 @@ export default function MessageList({
                     pendingToolCallIds={pendingToolCallIds}
                     toolDecisions={toolDecisions}
                     onToolDecision={onToolDecision}
+                    onToolApprovalResponse={onToolApprovalResponse}
                 />
             ))}
         </div>
