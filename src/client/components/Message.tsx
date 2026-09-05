@@ -6,6 +6,7 @@ type MessageProps = {
     pendingToolCallIds?: Set<string>;
     toolDecisions?: Record<string, boolean>;
     onToolDecision?: (toolCallId: string, approved: boolean) => void;
+    onToolApprovalResponse?: (options: { id: string; approved: boolean }) => void;
 };
 
 export default function Message({
@@ -13,6 +14,7 @@ export default function Message({
     pendingToolCallIds,
     toolDecisions,
     onToolDecision,
+    onToolApprovalResponse,
 }: MessageProps) {
     const isUser = message.role === "user";
     const hasText = message.parts.some(
@@ -38,7 +40,9 @@ export default function Message({
                         );
                     } else if (isToolUIPart(part)) {
                         const toolName = getToolName(part);
-                        const isPending = pendingToolCallIds?.has(part.toolCallId);
+                        const isClientPending = pendingToolCallIds?.has(part.toolCallId);
+                        const isServerPending = "approval" in part && part.state === "approval-requested";
+                        const isPending = isClientPending || isServerPending;
                         const decision = toolDecisions?.[part.toolCallId];
 
                         if (isPending) {
@@ -60,14 +64,24 @@ export default function Message({
                                     <div className="flex gap-2">
                                         <button
                                             type="button"
-                                            onClick={() => onToolDecision?.(part.toolCallId, true)}
+                                            onClick={() => {
+                                                if (isClientPending) onToolDecision?.(part.toolCallId, true);
+                                                if (isServerPending && "approval" in part && part.approval?.id) {
+                                                    onToolApprovalResponse?.({ id: part.approval.id, approved: true });
+                                                }
+                                            }}
                                             className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md shadow-sm transition active:scale-95 cursor-pointer"
                                         >
                                             Yes
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => onToolDecision?.(part.toolCallId, false)}
+                                            onClick={() => {
+                                                if (isClientPending) onToolDecision?.(part.toolCallId, false);
+                                                if (isServerPending && "approval" in part && part.approval?.id) {
+                                                    onToolApprovalResponse?.({ id: part.approval.id, approved: false });
+                                                }
+                                            }}
                                             className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-md shadow-sm transition active:scale-95 cursor-pointer"
                                         >
                                             No
