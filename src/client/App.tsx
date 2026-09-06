@@ -59,6 +59,7 @@ export default function App() {
         addToolApprovalResponse,
     } = useAgentChat({
         agent,
+        throttle: 50,
         onToolCall: async ({ toolCall, addToolOutput }) => {
             const approved = AUTO_APPROVED_CLIENT_TOOLS.has(toolCall.toolName)
                 ? true
