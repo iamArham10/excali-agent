@@ -23,11 +23,19 @@ export default function App() {
     const shouldAutoScrollRef = useRef(true);
     const [assistantWidth, setAssistantWidth] = useState(400);
     const [isAssistantCollapsed, setIsAssistantCollapsed] = useState(false);
-    const [mobileView, setMobileView] = useState<"canvas" | "assistant">("canvas");
+    const [mobileView, setMobileView] = useState<"canvas" | "assistant">(
+        "canvas",
+    );
 
-    const pendingResolversRef = useRef<Map<string, (approved: boolean) => void>>(new Map());
-    const [pendingToolCallIds, setPendingToolCallIds] = useState<Set<string>>(new Set());
-    const [toolDecisions, setToolDecisions] = useState<Record<string, boolean>>({});
+    const pendingResolversRef = useRef<
+        Map<string, (approved: boolean) => void>
+    >(new Map());
+    const [pendingToolCallIds, setPendingToolCallIds] = useState<Set<string>>(
+        new Set(),
+    );
+    const [toolDecisions, setToolDecisions] = useState<Record<string, boolean>>(
+        {},
+    );
 
     const handleToolDecision = (toolCallId: string, approved: boolean) => {
         const resolver = pendingResolversRef.current.get(toolCallId);
@@ -43,15 +51,26 @@ export default function App() {
         }
     };
 
-    const { messages, sendMessage, status, clearHistory, addToolApprovalResponse } = useAgentChat({
+    const {
+        messages,
+        sendMessage,
+        status,
+        clearHistory,
+        addToolApprovalResponse,
+    } = useAgentChat({
         agent,
         onToolCall: async ({ toolCall, addToolOutput }) => {
             const approved = AUTO_APPROVED_CLIENT_TOOLS.has(toolCall.toolName)
                 ? true
                 : await new Promise<boolean>((resolve) => {
-                    pendingResolversRef.current.set(toolCall.toolCallId, resolve);
-                    setPendingToolCallIds((prev) => new Set(prev).add(toolCall.toolCallId));
-                });
+                      pendingResolversRef.current.set(
+                          toolCall.toolCallId,
+                          resolve,
+                      );
+                      setPendingToolCallIds((prev) =>
+                          new Set(prev).add(toolCall.toolCallId),
+                      );
+                  });
 
             if (!approved) {
                 addToolOutput({
@@ -135,7 +154,10 @@ export default function App() {
         event.preventDefault();
         const onPointerMove = (pointerEvent: PointerEvent) => {
             setAssistantWidth(
-                Math.min(560, Math.max(340, window.innerWidth - pointerEvent.clientX)),
+                Math.min(
+                    560,
+                    Math.max(340, window.innerWidth - pointerEvent.clientX),
+                ),
             );
         };
         const stopResize = () => {
@@ -191,7 +213,12 @@ export default function App() {
                     onClick={() => setMobileView("assistant")}
                 >
                     Assistant
-                    {isBusy && <span className="mobile-activity-dot" aria-label="Working" />}
+                    {isBusy && (
+                        <span
+                            className="mobile-activity-dot"
+                            aria-label="Working"
+                        />
+                    )}
                 </button>
             </nav>
             <section className="canvas-panel" aria-label="Drawing canvas">
@@ -208,7 +235,8 @@ export default function App() {
                 tabIndex={0}
                 onPointerDown={beginResize}
                 onKeyDown={(event) => {
-                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+                        return;
                     event.preventDefault();
                     const direction = event.key === "ArrowLeft" ? 16 : -16;
                     setAssistantWidth((width) =>
@@ -240,7 +268,9 @@ export default function App() {
                                 ? "Expand assistant panel"
                                 : "Collapse assistant panel"
                         }
-                        onClick={() => setIsAssistantCollapsed((collapsed) => !collapsed)}
+                        onClick={() =>
+                            setIsAssistantCollapsed((collapsed) => !collapsed)
+                        }
                     >
                         <svg viewBox="0 0 20 20" aria-hidden="true">
                             <path
@@ -260,7 +290,9 @@ export default function App() {
                     onScroll={(event) => {
                         const element = event.currentTarget;
                         const distanceFromBottom =
-                            element.scrollHeight - element.scrollTop - element.clientHeight;
+                            element.scrollHeight -
+                            element.scrollTop -
+                            element.clientHeight;
                         shouldAutoScrollRef.current = distanceFromBottom < 96;
                     }}
                 >

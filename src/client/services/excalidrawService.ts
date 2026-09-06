@@ -69,8 +69,8 @@ export class ExcaliDrawService {
             label?: LabelUpdate;
         } & Partial<ExcalidrawElementSkeleton>)[],
     ) {
-        modifiedElementsSkeletons = this.stripUndefined(
-            modifiedElementsSkeletons,
+        modifiedElementsSkeletons = modifiedElementsSkeletons.map((update) =>
+            this.stripUndefined(update),
         );
 
         const elements = this.api.getSceneElements();
