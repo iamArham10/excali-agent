@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { vectorIndex } from "./vector-client";
+import { vectorIndex } from "../../services/vector-client";
 
 export const knowledgeSearchTool = tool({
     description:

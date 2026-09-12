@@ -6,7 +6,7 @@ import {
 import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import type { ElementUpdate } from "@excalidraw/excalidraw/element/mutateElement";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { normalizeArrowSkeletons } from "./normalizeArrowSkeletons";
+import { normalizeArrowSkeletons } from "../../shared/geometry/normalizeArrowSkeletons";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { parseMermaidToExcalidraw } from "@excalidraw/mermaid-to-excalidraw";
 type LabelUpdate = {

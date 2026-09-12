@@ -1,8 +1,4 @@
-type EvalOutput = {
-    toolCalls: { toolName: string }[];
-};
-
-type EvalExpected = { toolName: string }[];
+import { type EvalOutput, type EvalExpected } from "../types";
 // Check if the agent called the correct tools in the correct order.
 export function toolSelectionScorer({
     output,

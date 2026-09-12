@@ -1,12 +1,4 @@
-type Element = Record<string, unknown>;
-
-type EvalOutput = {
-    toolCalls: {
-        toolName: string;
-        input: unknown;
-    }[];
-    testCaseCategory: "create" | "modify" | "delete" | "multi";
-};
+import { type Element, type EvalOutput } from "../types";
 
 export function gridAlignmentScorer({
     output,

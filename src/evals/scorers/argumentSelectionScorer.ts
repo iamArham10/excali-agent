@@ -1,14 +1,4 @@
-type EvalOutput = {
-    toolCalls: {
-        toolName: string;
-        input: unknown;
-    }[];
-};
-
-type EvalExpected = {
-    toolName: string;
-    requiredArguments: Record<string, unknown>;
-}[];
+import { type EvalOutput, type EvalExpected } from "../types";
 
 type ExistsMatcher = {
     __matcher__: "exists";

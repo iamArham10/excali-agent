@@ -2,12 +2,12 @@ import "@excalidraw/excalidraw/index.css";
 import { Excalidraw } from "@excalidraw/excalidraw";
 import { useAgentChat } from "@cloudflare/ai-chat/react";
 import { useAgent } from "agents/react";
-import { useEffect, useState, useRef, type CSSProperties } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChatInput } from "./components/ChatInput";
 import MessageList from "./components/MessageList";
-import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
 import { useExcaliDrawHook } from "./hooks/useExcaliDrawHook";
-import { serializeCanvasState } from "./services/createCanvasState";
+import { useResizableSidebar } from "./hooks/useResizableSidebar";
+import { useToolDispatcher } from "./hooks/useToolDispatcher";
 
 const sessionId = crypto.randomUUID();
 const AUTO_APPROVED_CLIENT_TOOLS = new Set([
@@ -21,7 +21,6 @@ export default function App() {
     const { bindApi, service, api } = useExcaliDrawHook();
     const chatScrollRef = useRef<HTMLDivElement>(null);
     const shouldAutoScrollRef = useRef(true);
-    const [assistantWidth, setAssistantWidth] = useState(400);
     const [isAssistantCollapsed, setIsAssistantCollapsed] = useState(false);
     const [mobileView, setMobileView] = useState<"canvas" | "assistant">(
         "canvas",
@@ -36,6 +35,15 @@ export default function App() {
     const [toolDecisions, setToolDecisions] = useState<Record<string, boolean>>(
         {},
     );
+
+    const {
+        assistantWidth,
+        workspaceStyle,
+        beginResize,
+        handleKeyDown,
+    } = useResizableSidebar();
+
+    const executeTool = useToolDispatcher(service, api);
 
     const handleToolDecision = (toolCallId: string, approved: boolean) => {
         const resolver = pendingResolversRef.current.get(toolCallId);
@@ -81,114 +89,12 @@ export default function App() {
                 return;
             }
 
-            if (toolCall.toolName === "drawDiagramUsingMermaid") {
-                const { mermaidString } = toolCall.input as {
-                    mermaidString: string;
-                };
-
-                if (await service.drawMermaidDiagram(mermaidString)) {
-                    addToolOutput({
-                        toolCallId: toolCall.toolCallId,
-                        output: `Diagram drawn successfully`,
-                    });
-                } else {
-                    addToolOutput({
-                        toolCallId: toolCall.toolCallId,
-                        output: `Error, diagram was not drawn successfully`,
-                    });
-                }
-            }
-
-            if (toolCall.toolName === "clearCanvas") {
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `${service.clearCanvas() ? "Canvas Cleared" : "Could not clear the canvas"}`,
-                });
-            }
-
-            if (toolCall.toolName === "getCanvasState") {
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `${api ? serializeCanvasState(service.getCanvasState()) : "canvas is empty"}`,
-                });
-            }
-
-            if (toolCall.toolName === "drawElements") {
-                const { elements } = toolCall.input as {
-                    elements: ExcalidrawElementSkeleton[];
-                };
-                service.createElements(elements);
-
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `created ${elements.length} new elements`,
-                });
-            }
-
-            if (toolCall.toolName === "deleteElements") {
-                const { elements } = toolCall.input as {
-                    elements: { id: string }[];
-                };
-
-                service.deleteElements(elements);
-
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `deleted ${elements.length} new elements`,
-                });
-            }
-
-            if (toolCall.toolName === "modifyElements") {
-                let elements = (
-                    toolCall.input as {
-                        elements: ({
-                            id: string;
-                            label?: {
-                                text?: string;
-                                fontSize?: number;
-                                fontFamily?: number;
-                                textAlign?: "left" | "center" | "right";
-                                verticalAlign?: "top" | "middle" | "bottom";
-                            };
-                        } & Partial<ExcalidrawElementSkeleton>)[];
-                    }
-                ).elements;
-
-                service.modifyElements(elements);
-
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `modified ${elements.length} new elements`,
-                });
-            }
+            await executeTool({ toolCall, addToolOutput });
         },
     });
+
     const [input, setInput] = useState("");
     const isBusy = status === "submitted" || status === "streaming";
-    const workspaceStyle = {
-        "--assistant-width": `${assistantWidth}px`,
-    } as CSSProperties;
-
-    const beginResize = (event: React.PointerEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        const onPointerMove = (pointerEvent: PointerEvent) => {
-            setAssistantWidth(
-                Math.min(
-                    560,
-                    Math.max(340, window.innerWidth - pointerEvent.clientX),
-                ),
-            );
-        };
-        const stopResize = () => {
-            document.body.classList.remove("is-resizing");
-            window.removeEventListener("pointermove", onPointerMove);
-            window.removeEventListener("pointerup", stopResize);
-        };
-
-        document.body.classList.add("is-resizing");
-        window.addEventListener("pointermove", onPointerMove);
-        window.addEventListener("pointerup", stopResize);
-    };
 
     useEffect(() => {
         clearHistory();
@@ -253,15 +159,7 @@ export default function App() {
                 aria-valuenow={assistantWidth}
                 tabIndex={0}
                 onPointerDown={beginResize}
-                onKeyDown={(event) => {
-                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
-                        return;
-                    event.preventDefault();
-                    const direction = event.key === "ArrowLeft" ? 16 : -16;
-                    setAssistantWidth((width) =>
-                        Math.min(560, Math.max(340, width + direction)),
-                    );
-                }}
+                onKeyDown={handleKeyDown}
             />
             <aside className="chat-panel" aria-label="Diagram assistant">
                 <header className="chat-header">

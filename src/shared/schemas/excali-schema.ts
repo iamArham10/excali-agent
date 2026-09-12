@@ -253,3 +253,22 @@ export {
     ModifyElementsToolSchema,
     DeleteElementsToolSchema,
 };
+
+export type DrawElementsInput = z.infer<typeof DrawElementsToolSchema>;
+export type ModifyElementsInput = z.infer<typeof ModifyElementsToolSchema>;
+export type DeleteElementsInput = z.infer<typeof DeleteElementsToolSchema>;
+
+export type FontFamily = z.infer<typeof fontFamilySchema>;
+export type Arrowhead = z.infer<typeof arrowheadSchema>;
+export type Point = z.infer<typeof pointSchema>;
+export type Label = z.infer<typeof label>;
+
+export type DrawShapeElement = z.infer<typeof drawShapeElementSchema>;
+export type DrawTextElement = z.infer<typeof drawTextElementSchema>;
+export type DrawArrowElement = z.infer<typeof drawArrowElementSchema>;
+export type DrawLineElement = z.infer<typeof drawLineElementSchema>;
+
+export type ModifyShapeElement = z.infer<typeof modifyShapeElementSchema>;
+export type ModifyTextElement = z.infer<typeof modifyTextElementSchema>;
+export type ModifyArrowElement = z.infer<typeof modifyArrowElementSchema>;
+export type ModifyLineElement = z.infer<typeof modifyLineElementSchema>;

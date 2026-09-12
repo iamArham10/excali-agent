@@ -40,7 +40,6 @@ Eval("excali-agent", {
         await sleep(2000);
         const result = await runAgentForEval({
             messages: buildMessages(testCase),
-            canvasState: "",
         });
         return {
             text: result.text,

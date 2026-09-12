@@ -1,17 +1,4 @@
-type Element = Record<string, unknown>;
-
-type EvalOutput = {
-    toolCalls: {
-        toolName: string;
-        input: unknown;
-    }[];
-    testCaseCategory: "create" | "modify" | "delete" | "multi";
-};
-
-type EvalExpected = {
-    toolName: string;
-    requiredArguments: Record<string, unknown>;
-}[];
+import { type Element, type EvalOutput, type EvalExpected } from "../types";
 
 export function arrowBindingScorer({
     output,

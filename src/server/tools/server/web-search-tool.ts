@@ -1,9 +1,14 @@
-// tools/web-search.ts
 import { tool } from "ai";
 import { z } from "zod";
 import { tavily } from "@tavily/core";
 
-const tavilyClient = tavily({ apiKey: process.env.TAVILY_API_KEY! });
+let _tavilyClient: ReturnType<typeof tavily> | null = null;
+function getTavilyClient() {
+    if (!_tavilyClient) {
+        _tavilyClient = tavily({ apiKey: process.env.TAVILY_API_KEY! });
+    }
+    return _tavilyClient;
+}
 
 export const webSearchTool = tool({
     description:
@@ -15,7 +20,8 @@ export const webSearchTool = tool({
     needsApproval: true,
     execute: async ({ query, maxResults }) => {
         try {
-            const result = await tavilyClient.search(query, {
+            const client = getTavilyClient();
+            const result = await client.search(query, {
                 maxResults: maxResults ?? 5,
                 includeAnswer: true,
                 searchDepth: "advanced",

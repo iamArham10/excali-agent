@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "fs";
 import { glob } from "glob";
 import path from "path";
 import matter from "gray-matter";
-import { vectorIndex } from "./vector-client";
+import { vectorIndex } from "../src/server/services/vector-client";
 
 const CHUNK_SIZE = 800;
 const CHUNK_OVERLAP = 120;

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { isToolUIPart, getToolName, type UIMessage } from "ai";
 import MarkdownRenderer from "./MarkdownRenderer";
+import ToolApprovalCard from "./ToolApprovalCard";
+import ToolReceipt from "./ToolReceipt";
+import {
+    getToolPresentation,
+    getToolDetail,
+    getCompletedToolText,
+} from "./ToolPresentation";
 
 type MessageProps = {
     message: UIMessage;
@@ -11,53 +18,6 @@ type MessageProps = {
         id: string;
         approved: boolean;
     }) => void;
-};
-
-type ToolPresentation = {
-    title: string;
-    description: string;
-    icon: string;
-    destructive?: boolean;
-};
-
-const TOOL_PRESENTATION: Record<string, ToolPresentation> = {
-    drawElements: {
-        title: "Draw elements",
-        description: "Add new shapes and connections to the canvas.",
-        icon: "+",
-    },
-    modifyElements: {
-        title: "Update elements",
-        description: "Apply the requested changes to the canvas.",
-        icon: "↻",
-    },
-    deleteElements: {
-        title: "Delete elements",
-        description: "Remove selected elements and their connections.",
-        icon: "−",
-        destructive: true,
-    },
-    clearCanvas: {
-        title: "Clear the canvas",
-        description: "Remove every element from the current canvas.",
-        icon: "!",
-        destructive: true,
-    },
-    getCanvasState: {
-        title: "Read the canvas",
-        description: "Inspect the current elements to understand the diagram.",
-        icon: "◇",
-    },
-    webSearchTool: {
-        title: "Search the web",
-        description: "Send this query to the web search provider.",
-        icon: "↗",
-    },
-    knowledgeSearchTool: {
-        title: "Search the knowledge base",
-        description: "Look for relevant information in the connected documents.",
-        icon: "⌕",
-    },
 };
 
 export default function Message({
@@ -126,77 +86,44 @@ export default function Message({
                         const detail = getToolDetail(toolName, input);
 
                         return (
-                            <section
+                            <ToolApprovalCard
                                 key={part.toolCallId || index}
-                                className={`approval-card ${presentation.destructive ? "approval-card-danger" : ""}`}
-                                aria-label={`${presentation.title} approval`}
-                            >
-                                <div className="approval-heading">
-                                    <span className="tool-icon" aria-hidden="true">
-                                        {presentation.icon}
-                                    </span>
-                                    <div>
-                                        <span className="approval-eyebrow">
-                                            Permission requested
-                                        </span>
-                                        <h3>{presentation.title}</h3>
-                                    </div>
-                                </div>
-                                <p>{presentation.description}</p>
-                                {detail && <div className="tool-detail">{detail}</div>}
-                                <div className="approval-actions">
-                                    <button
-                                        type="button"
-                                        className="button-secondary"
-                                        disabled={isSubmitting}
-                                        onClick={() => {
-                                            if (isClientPending) {
-                                                onToolDecision?.(part.toolCallId, false);
-                                            }
-                                            if (
-                                                isServerPending &&
-                                                "approval" in part &&
-                                                part.approval?.id
-                                            ) {
-                                                submitServerDecision(
-                                                    part.toolCallId,
-                                                    part.approval.id,
-                                                    false,
-                                                );
-                                            }
-                                        }}
-                                    >
-                                        Deny
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={
-                                            presentation.destructive
-                                                ? "button-danger"
-                                                : "button-primary"
-                                        }
-                                        disabled={isSubmitting}
-                                        onClick={() => {
-                                            if (isClientPending) {
-                                                onToolDecision?.(part.toolCallId, true);
-                                            }
-                                            if (
-                                                isServerPending &&
-                                                "approval" in part &&
-                                                part.approval?.id
-                                            ) {
-                                                submitServerDecision(
-                                                    part.toolCallId,
-                                                    part.approval.id,
-                                                    true,
-                                                );
-                                            }
-                                        }}
-                                    >
-                                        {isSubmitting ? "Submitting…" : "Allow once"}
-                                    </button>
-                                </div>
-                            </section>
+                                presentation={presentation}
+                                detail={detail}
+                                isSubmitting={isSubmitting}
+                                onDeny={() => {
+                                    if (isClientPending) {
+                                        onToolDecision?.(part.toolCallId, false);
+                                    }
+                                    if (
+                                        isServerPending &&
+                                        "approval" in part &&
+                                        part.approval?.id
+                                    ) {
+                                        submitServerDecision(
+                                            part.toolCallId,
+                                            part.approval.id,
+                                            false,
+                                        );
+                                    }
+                                }}
+                                onApprove={() => {
+                                    if (isClientPending) {
+                                        onToolDecision?.(part.toolCallId, true);
+                                    }
+                                    if (
+                                        isServerPending &&
+                                        "approval" in part &&
+                                        part.approval?.id
+                                    ) {
+                                        submitServerDecision(
+                                            part.toolCallId,
+                                            part.approval.id,
+                                            true,
+                                        );
+                                    }
+                                }}
+                            />
                         );
                     }
 
@@ -234,77 +161,4 @@ export default function Message({
             </div>
         </article>
     );
-}
-
-function ToolReceipt({
-    icon,
-    text,
-    error = false,
-}: {
-    icon: string;
-    text: string;
-    error?: boolean;
-}) {
-    return (
-        <div className={`tool-receipt ${error ? "tool-receipt-error" : ""}`}>
-            <span aria-hidden="true">{icon}</span>
-            <span>{text}</span>
-        </div>
-    );
-}
-
-function getToolPresentation(toolName: string): ToolPresentation {
-    return (
-        TOOL_PRESENTATION[toolName] ?? {
-            title: humanizeToolName(toolName),
-            description: "Allow the assistant to perform this action.",
-            icon: "◇",
-        }
-    );
-}
-
-function humanizeToolName(value: string) {
-    const words = value.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/Tool$/, "");
-    return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-function getToolDetail(
-    toolName: string,
-    input: Record<string, unknown> | undefined,
-) {
-    if (!input) return null;
-
-    if (typeof input.query === "string") {
-        return `“${input.query}”`;
-    }
-
-    if (Array.isArray(input.elements)) {
-        const count = input.elements.length;
-        return `${count} element${count === 1 ? "" : "s"}`;
-    }
-
-    if (toolName === "clearCanvas") {
-        return "This action cannot be undone from the chat.";
-    }
-
-    return null;
-}
-
-function getCompletedToolText(
-    toolName: string,
-    fallbackTitle: string,
-    input: Record<string, unknown> | undefined,
-) {
-    const count = Array.isArray(input?.elements) ? input.elements.length : null;
-
-    if (count !== null) {
-        const noun = count === 1 ? "element" : "elements";
-        if (toolName === "drawElements") return `Added ${count} ${noun}`;
-        if (toolName === "modifyElements") return `Updated ${count} ${noun}`;
-        if (toolName === "deleteElements") return `Removed ${count} ${noun}`;
-    }
-
-    if (toolName === "clearCanvas") return "Cleared canvas";
-    if (toolName === "getCanvasState") return "Read canvas state";
-    return `${fallbackTitle} completed`;
 }
