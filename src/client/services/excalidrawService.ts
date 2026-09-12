@@ -8,7 +8,7 @@ import type { ElementUpdate } from "@excalidraw/excalidraw/element/mutateElement
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { normalizeArrowSkeletons } from "./normalizeArrowSkeletons";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
-
+import { parseMermaidToExcalidraw } from "@excalidraw/mermaid-to-excalidraw";
 type LabelUpdate = {
     text?: string;
     fontSize?: number;
@@ -29,6 +29,21 @@ export class ExcaliDrawService {
 
     getCanvasState() {
         return this.api.getSceneElements() as ExcalidrawElement[];
+    }
+
+    async drawMermaidDiagram(mermaidString: string) {
+        try {
+            const { elements: elementSkeletons } =
+                await parseMermaidToExcalidraw(mermaidString);
+
+            const elements = convertToExcalidrawElements(elementSkeletons);
+
+            this.api.updateScene({ elements });
+            this.api.scrollToContent(elements, { fitToContent: true });
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     clearCanvas() {

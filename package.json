@@ -33,6 +33,7 @@
         "@ai-sdk/openai": "^4.0.46",
         "@cloudflare/ai-chat": "^0.10.1",
         "@excalidraw/excalidraw": "^0.18.1",
+        "@excalidraw/mermaid-to-excalidraw": "^2.2.2",
         "@tailwindcss/vite": "^4.3.3",
         "@tavily/core": "^0.7.8",
         "@toon-format/toon": "^4.1.1",

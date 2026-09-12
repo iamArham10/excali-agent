@@ -81,6 +81,24 @@ export default function App() {
                 return;
             }
 
+            if (toolCall.toolName === "drawDiagramUsingMermaid") {
+                const { mermaidString } = toolCall.input as {
+                    mermaidString: string;
+                };
+
+                if (await service.drawMermaidDiagram(mermaidString)) {
+                    addToolOutput({
+                        toolCallId: toolCall.toolCallId,
+                        output: `Diagram drawn successfully`,
+                    });
+                } else {
+                    addToolOutput({
+                        toolCallId: toolCall.toolCallId,
+                        output: `Error, diagram was not drawn successfully`,
+                    });
+                }
+            }
+
             if (toolCall.toolName === "clearCanvas") {
                 addToolOutput({
                     toolCallId: toolCall.toolCallId,
