@@ -7,7 +7,10 @@ type MessageListProps = {
     pendingToolCallIds?: Set<string>;
     toolDecisions?: Record<string, boolean>;
     onToolDecision?: (toolCallId: string, approved: boolean) => void;
-    onToolApprovalResponse?: (options: { id: string; approved: boolean }) => void;
+    onToolApprovalResponse?: (options: {
+        id: string;
+        approved: boolean;
+    }) => void;
     onPromptSelect?: (prompt: string) => void;
 };
 
@@ -57,20 +60,30 @@ export default function MessageList({
                 <div className="empty-state">
                     <span className="empty-eyebrow">New diagram</span>
                     <h2>Build a system diagram</h2>
-                    <p>Describe the components, boundaries, and relationships.</p>
-                    <div className="prompt-examples" aria-label="Diagram templates">
+                    <p>
+                        Describe the components, boundaries, and relationships.
+                    </p>
+                    <div
+                        className="prompt-examples"
+                        aria-label="Diagram templates"
+                    >
                         {STARTERS.map((starter) => (
                             <button
                                 type="button"
                                 key={starter.code}
                                 onClick={() => onPromptSelect?.(starter.prompt)}
                             >
-                                <span className="prompt-code">{starter.code}</span>
+                                <span className="prompt-code">
+                                    {starter.code}
+                                </span>
                                 <span className="prompt-copy">
                                     <strong>{starter.title}</strong>
                                     <small>{starter.description}</small>
                                 </span>
-                                <span className="prompt-arrow" aria-hidden="true">
+                                <span
+                                    className="prompt-arrow"
+                                    aria-hidden="true"
+                                >
                                     →
                                 </span>
                             </button>
@@ -88,11 +101,15 @@ export default function MessageList({
                     onToolApprovalResponse={onToolApprovalResponse}
                 />
             ))}
-            {isWorking && !isWaitingForApproval && <ActivityIndicator status={status} />}
+            {isWorking && !isWaitingForApproval && (
+                <ActivityIndicator status={status} />
+            )}
             {status === "error" && (
                 <div className="chat-error" role="alert">
                     <strong>Request failed</strong>
-                    <span>Check the connection and send the instruction again.</span>
+                    <span>
+                        Check the connection and send the instruction again.
+                    </span>
                 </div>
             )}
         </div>
@@ -107,7 +124,11 @@ function ActivityIndicator({
     return (
         <div className="activity-indicator" role="status">
             <span className="activity-pulse" aria-hidden="true" />
-            <span>{status === "submitted" ? "Planning diagram" : "Updating canvas"}</span>
+            <span>
+                {status === "submitted"
+                    ? "Planning diagram"
+                    : "Updating canvas"}
+            </span>
             <span className="thinking-dots" aria-hidden="true">
                 <i />
                 <i />
