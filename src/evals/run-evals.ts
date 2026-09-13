@@ -1,61 +1,85 @@
 import { Eval } from "braintrust";
-import { readFileSync } from "node:fs";
 import { runAgentForEval } from "../server/agent-core";
-import { argumentSelectionScorer } from "./scorers/argumentSelectionScorer";
-import { arrowBindingScorer } from "./scorers/arrowBindingScorer";
-import { duplicateIdScorer } from "./scorers/duplicateIdScorer";
-import { gridAlignmentScorer } from "./scorers/gridAlignmentScorer";
-import { labelCompletenessScorer } from "./scorers/labelCompletenessScorer";
-import { noOverlapScorer } from "./scorers/noOverlapScorer";
-import { toolSelectionScorer } from "./scorers/toolSelectionScorer";
+import { buildMessages } from "./lib/build-messages";
+import { loadDataset } from "./lib/load-dataset";
+import { diagramScorer } from "./scorers/diagram-scorer";
+import { editingScorer } from "./scorers/editing-scorer";
+import { geometryScorer } from "./scorers/geometry-scorer";
+import { mermaidScorer } from "./scorers/mermaid-scorer";
+import { researchScorer } from "./scorers/research-scorer";
+import { responseScorer } from "./scorers/response-scorer";
+import { routingScorer } from "./scorers/routing-scorer";
+import { schemaScorer } from "./scorers/schema-scorer";
 
-import { toolSelectionGoldenDatasetType } from "./types";
-import { buildMessages } from "./build-messages";
+const suiteConfigurations = {
+    routing: {
+        dataset: "routing.json",
+        scorers: [routingScorer, schemaScorer, responseScorer],
+    },
+    creation: {
+        dataset: "creation.json",
+        scorers: [routingScorer, schemaScorer, diagramScorer, geometryScorer],
+    },
+    editing: {
+        dataset: "editing.json",
+        scorers: [routingScorer, schemaScorer, editingScorer],
+    },
+    mermaid: {
+        dataset: "mermaid.json",
+        scorers: [routingScorer, schemaScorer, mermaidScorer],
+    },
+    research: {
+        dataset: "research.json",
+        scorers: [routingScorer, schemaScorer, researchScorer],
+    },
+} as const;
 
-const datasetPath = new URL(
-    "./dataset/tools-usage-golden-dataset.json",
-    import.meta.url,
-);
+type SuiteName = keyof typeof suiteConfigurations;
 
-const rawData: unknown = JSON.parse(readFileSync(datasetPath, "utf-8"));
-const toolSelectionTestCases = toolSelectionGoldenDatasetType.parse(rawData);
+const requestedSuite = process.env.EVAL_SUITE ?? "all";
+const suiteNames = Object.keys(suiteConfigurations) as SuiteName[];
+if (requestedSuite !== "all" && !suiteNames.includes(requestedSuite as SuiteName)) {
+    throw new Error(
+        `Unknown EVAL_SUITE '${requestedSuite}'. Expected one of: all, ${suiteNames.join(", ")}`,
+    );
+}
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const selectedSuites =
+    requestedSuite === "all" ? suiteNames : [requestedSuite as SuiteName];
+const maxConcurrency = Number.parseInt(process.env.EVAL_CONCURRENCY ?? "3", 10);
+const delayMs = Number.parseInt(process.env.EVAL_DELAY_MS ?? "0", 10);
 
-Eval("excali-agent", {
-    experimentName: "diagram-agent-bench",
-    maxConcurrency: 3,
-    data: toolSelectionTestCases.map((testCase) => {
-        return {
+for (const suiteName of selectedSuites) {
+    const configuration = suiteConfigurations[suiteName];
+    const testCases = loadDataset(configuration.dataset);
+
+    Eval("excali-agent", {
+        experimentName: `eval-${suiteName}`,
+        maxConcurrency,
+        data: testCases.map((testCase) => ({
             input: testCase,
-            expected: testCase.expected.toolCalls,
+            expected: testCase.expected,
             metadata: {
                 id: testCase.id,
+                suite: testCase.suite,
                 difficulty: testCase.difficulty,
-                category: testCase.category,
+                tags: testCase.tags,
             },
-        };
-    }),
-    task: async (testCase) => {
-        await sleep(2000);
-        const result = await runAgentForEval({
-            messages: buildMessages(testCase),
-        });
-        return {
-            text: result.text,
-            steps: result.steps,
-            toolCalls: result.toolCalls,
-            toolResults: result.toolResults,
-            testCaseCategory: testCase.category,
-        };
-    },
-    scores: [
-        toolSelectionScorer,
-        argumentSelectionScorer,
-        arrowBindingScorer,
-        gridAlignmentScorer,
-        labelCompletenessScorer,
-        duplicateIdScorer,
-        noOverlapScorer,
-    ],
-});
+        })),
+        task: async (testCase) => {
+            if (delayMs > 0) {
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+            const result = await runAgentForEval({
+                messages: buildMessages(testCase),
+            });
+            return {
+                text: result.text,
+                steps: result.steps,
+                toolCalls: result.toolCalls,
+                toolResults: result.toolResults,
+            };
+        },
+        scores: [...configuration.scorers],
+    });
+}

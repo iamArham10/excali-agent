@@ -1,0 +1,177 @@
+[
+    {
+        "id": "creation-labeled-rectangle",
+        "suite": "creation",
+        "input": "Create a rectangle labeled Client",
+        "difficulty": "easy",
+        "tags": ["shape", "label"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [{ "label": "Client", "type": "rectangle" }],
+                "connections": []
+            }
+        }
+    },
+    {
+        "id": "creation-standalone-title",
+        "suite": "creation",
+        "input": "Add a standalone title that says Payment Architecture",
+        "difficulty": "easy",
+        "tags": ["text"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [{ "label": "Payment Architecture", "type": "text" }],
+                "connections": [],
+                "requireLabels": false
+            }
+        }
+    },
+    {
+        "id": "creation-three-stage-flow",
+        "suite": "creation",
+        "input": "Draw three rectangles labeled Input, Process, and Output from left to right, with arrows Input to Process and Process to Output",
+        "difficulty": "medium",
+        "tags": ["flow", "bindings"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [
+                    { "label": "Input", "type": "rectangle" },
+                    { "label": "Process", "type": "rectangle" },
+                    { "label": "Output", "type": "rectangle" }
+                ],
+                "connections": [
+                    { "from": "Input", "to": "Process" },
+                    { "from": "Process", "to": "Output" }
+                ]
+            }
+        }
+    },
+    {
+        "id": "creation-decision-branches",
+        "suite": "creation",
+        "input": "Create a flowchart with an ellipse Start leading to a diamond Valid?, then arrows from Valid? to rectangles Accept and Reject",
+        "difficulty": "medium",
+        "tags": ["decision", "mixed-shapes"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [
+                    { "label": "Start", "type": "ellipse" },
+                    { "label": "Valid?", "type": "diamond" },
+                    { "label": "Accept", "type": "rectangle" },
+                    { "label": "Reject", "type": "rectangle" }
+                ],
+                "connections": [
+                    { "from": "Start", "to": "Valid?" },
+                    { "from": "Valid?", "to": "Accept" },
+                    { "from": "Valid?", "to": "Reject" }
+                ]
+            }
+        }
+    },
+    {
+        "id": "creation-bidirectional-link",
+        "suite": "creation",
+        "input": "Draw Client and Server rectangles with separate arrows in both directions",
+        "difficulty": "hard",
+        "tags": ["bidirectional", "geometry"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [
+                    { "label": "Client", "type": "rectangle" },
+                    { "label": "Server", "type": "rectangle" }
+                ],
+                "connections": [
+                    { "from": "Client", "to": "Server" },
+                    { "from": "Server", "to": "Client" }
+                ]
+            }
+        }
+    },
+    {
+        "id": "creation-fan-out",
+        "suite": "creation",
+        "input": "Draw an API Gateway rectangle above three rectangles labeled Users, Orders, and Billing. Connect the gateway to each service.",
+        "difficulty": "hard",
+        "tags": ["fan-out", "layout"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [
+                    { "label": "API Gateway", "type": "rectangle" },
+                    { "label": "Users", "type": "rectangle" },
+                    { "label": "Orders", "type": "rectangle" },
+                    { "label": "Billing", "type": "rectangle" }
+                ],
+                "connections": [
+                    { "from": "API Gateway", "to": "Users" },
+                    { "from": "API Gateway", "to": "Orders" },
+                    { "from": "API Gateway", "to": "Billing" }
+                ]
+            }
+        }
+    },
+    {
+        "id": "creation-labeled-edge",
+        "suite": "creation",
+        "input": "Draw a Browser rectangle connected to an API rectangle by an arrow labeled HTTPS",
+        "difficulty": "medium",
+        "tags": ["arrow-label"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [
+                    { "label": "Browser", "type": "rectangle" },
+                    { "label": "API", "type": "rectangle" }
+                ],
+                "connections": [
+                    { "from": "Browser", "to": "API", "label": "HTTPS" }
+                ]
+            }
+        }
+    },
+    {
+        "id": "creation-distinct-duplicate-labels",
+        "suite": "creation",
+        "input": "Draw two separate rectangles both labeled Worker, side by side",
+        "difficulty": "hard",
+        "tags": ["duplicate-label", "unique-id"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["drawElements"],
+                "forbiddenTools": ["drawDiagramUsingMermaid"]
+            },
+            "diagram": {
+                "nodes": [
+                    { "label": "Worker", "type": "rectangle", "count": 2 }
+                ],
+                "connections": []
+            }
+        }
+    }
+]

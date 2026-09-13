@@ -1,0 +1,296 @@
+[
+    {
+        "id": "editing-rename-shape",
+        "suite": "editing",
+        "input": "Rename Worker to Queue Consumer",
+        "difficulty": "easy",
+        "tags": ["modify", "label"],
+        "seed": {
+            "priorPrompt": "Draw a Worker box",
+            "priorResponse": "Created the Worker box.",
+            "elements": [
+                {
+                    "id": "worker",
+                    "type": "rectangle",
+                    "x": 0,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Worker" }
+                }
+            ]
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["modifyElements"],
+                "forbiddenTools": [
+                    "drawElements",
+                    "deleteElements",
+                    "getCanvasState"
+                ]
+            },
+            "editing": {
+                "mutations": [
+                    {
+                        "id": "worker",
+                        "type": "rectangle",
+                        "changes": { "label": { "text": "Queue Consumer" } }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "editing-style-one-preserve-other",
+        "suite": "editing",
+        "input": "Make only the API box light blue using #a5d8ff",
+        "difficulty": "medium",
+        "tags": ["modify", "style", "preservation"],
+        "seed": {
+            "priorPrompt": "Draw API and Database boxes",
+            "priorResponse": "Created both boxes.",
+            "elements": [
+                {
+                    "id": "api",
+                    "type": "rectangle",
+                    "x": 0,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "API" }
+                },
+                {
+                    "id": "db",
+                    "type": "ellipse",
+                    "x": 300,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Database" }
+                }
+            ]
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["modifyElements"],
+                "forbiddenTools": ["drawElements", "deleteElements"]
+            },
+            "editing": {
+                "mutations": [
+                    {
+                        "id": "api",
+                        "type": "rectangle",
+                        "changes": { "backgroundColor": "#a5d8ff" }
+                    }
+                ],
+                "untouchedIds": ["db"]
+            }
+        }
+    },
+    {
+        "id": "editing-move-connected-node-reroute",
+        "suite": "editing",
+        "input": "Move the Database to x 600, y 200 and keep its connection to the API correctly attached",
+        "difficulty": "hard",
+        "tags": ["move", "arrow", "geometry"],
+        "seed": {
+            "priorPrompt": "Draw API connected to Database",
+            "priorResponse": "Created the connected boxes.",
+            "elements": [
+                {
+                    "id": "api",
+                    "type": "rectangle",
+                    "x": 0,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "API" }
+                },
+                {
+                    "id": "db",
+                    "type": "ellipse",
+                    "x": 400,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Database" }
+                },
+                {
+                    "id": "api-db",
+                    "type": "arrow",
+                    "x": 200,
+                    "y": 40,
+                    "points": [
+                        [0, 0],
+                        [200, 0]
+                    ],
+                    "startArrowhead": null,
+                    "endArrowhead": "arrow",
+                    "start": { "id": "api" },
+                    "end": { "id": "db" }
+                }
+            ]
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["modifyElements"],
+                "forbiddenTools": ["drawElements", "deleteElements"]
+            },
+            "editing": {
+                "mutations": [
+                    {
+                        "id": "db",
+                        "type": "ellipse",
+                        "changes": { "x": 600, "y": 200 }
+                    },
+                    { "id": "api-db", "type": "arrow", "changes": {} }
+                ],
+                "untouchedIds": ["api"]
+            }
+        }
+    },
+    {
+        "id": "editing-delete-shape-cascade",
+        "suite": "editing",
+        "input": "Delete the Database",
+        "difficulty": "medium",
+        "tags": ["delete", "cascade"],
+        "seed": {
+            "priorPrompt": "Draw API connected to Database",
+            "priorResponse": "Created the connected boxes.",
+            "elements": [
+                {
+                    "id": "api",
+                    "type": "rectangle",
+                    "x": 0,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "API" }
+                },
+                {
+                    "id": "db",
+                    "type": "ellipse",
+                    "x": 400,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Database" }
+                },
+                {
+                    "id": "api-db",
+                    "type": "arrow",
+                    "x": 200,
+                    "y": 40,
+                    "points": [
+                        [0, 0],
+                        [200, 0]
+                    ],
+                    "startArrowhead": null,
+                    "endArrowhead": "arrow",
+                    "start": { "id": "api" },
+                    "end": { "id": "db" }
+                }
+            ]
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["deleteElements"],
+                "forbiddenTools": [
+                    "drawElements",
+                    "modifyElements",
+                    "clearCanvas"
+                ]
+            },
+            "editing": {
+                "deletedIds": ["db"],
+                "untouchedIds": ["api", "api-db"]
+            }
+        }
+    },
+    {
+        "id": "editing-clear-all-not-individual-delete",
+        "suite": "editing",
+        "input": "Remove everything from the canvas",
+        "difficulty": "easy",
+        "tags": ["clear", "destructive"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["clearCanvas"],
+                "forbiddenTools": ["deleteElements", "drawElements"]
+            },
+            "editing": { "clearCanvas": true }
+        }
+    },
+    {
+        "id": "editing-batch-style-update",
+        "suite": "editing",
+        "input": "Give both Service A and Service B a solid #b2f2bb background",
+        "difficulty": "medium",
+        "tags": ["batch", "style"],
+        "seed": {
+            "priorPrompt": "Draw Service A and Service B",
+            "priorResponse": "Created both services.",
+            "elements": [
+                {
+                    "id": "service-a",
+                    "type": "rectangle",
+                    "x": 0,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Service A" }
+                },
+                {
+                    "id": "service-b",
+                    "type": "rectangle",
+                    "x": 300,
+                    "y": 0,
+                    "width": 200,
+                    "height": 80,
+                    "label": { "text": "Service B" }
+                }
+            ]
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["modifyElements"],
+                "forbiddenTools": ["drawElements", "deleteElements"]
+            },
+            "editing": {
+                "mutations": [
+                    {
+                        "id": "service-a",
+                        "type": "rectangle",
+                        "changes": {
+                            "backgroundColor": "#b2f2bb",
+                            "fillStyle": "solid"
+                        }
+                    },
+                    {
+                        "id": "service-b",
+                        "type": "rectangle",
+                        "changes": {
+                            "backgroundColor": "#b2f2bb",
+                            "fillStyle": "solid"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "editing-read-before-ambiguous-edit",
+        "suite": "editing",
+        "input": "Move the login service below the gateway",
+        "difficulty": "hard",
+        "tags": ["unknown-state", "read-first"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["getCanvasState"],
+                "forbiddenTools": ["drawElements", "deleteElements"]
+            },
+            "editing": { "readCanvasFirst": true }
+        }
+    }
+]

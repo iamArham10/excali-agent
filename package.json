@@ -8,7 +8,8 @@
         "build": "vite build",
         "preview": "npm run build && vite preview",
         "deploy": "npm run build && wrangler deploy",
-        "test": "npx tsx --env-file=.dev.vars src/evals/run-evals.ts",
+        "test": "node --import tsx src/evals/check-evals.ts",
+        "eval": "node --env-file=.dev.vars --import tsx src/evals/run-evals.ts",
         "ingest": "npx tsx --env-file=.dev.vars scripts/ingest.ts"
     },
     "devDependencies": {

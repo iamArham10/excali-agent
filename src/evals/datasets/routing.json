@@ -1,0 +1,118 @@
+[
+  {
+    "id": "routing-direct-native-drawing",
+    "suite": "routing",
+    "input": "Draw a rectangle labeled API",
+    "difficulty": "easy",
+    "tags": ["native", "create"],
+    "expected": {
+      "routing": { "requiredTools": ["drawElements"], "forbiddenTools": ["drawDiagramUsingMermaid", "webSearchTool", "knowledgeSearchTool"] }
+    }
+  },
+  {
+    "id": "routing-canvas-inspection",
+    "suite": "routing",
+    "input": "What elements are currently on my canvas?",
+    "difficulty": "easy",
+    "tags": ["state", "read"],
+    "expected": {
+      "routing": { "requiredTools": ["getCanvasState"], "forbiddenTools": ["drawElements", "modifyElements", "deleteElements", "clearCanvas"] }
+    }
+  },
+  {
+    "id": "routing-unknown-state-before-edit",
+    "suite": "routing",
+    "input": "Change the database box to green",
+    "difficulty": "medium",
+    "tags": ["state", "edit"],
+    "expected": {
+      "routing": { "requiredTools": ["getCanvasState"], "forbiddenTools": ["drawElements", "deleteElements", "clearCanvas"] }
+    }
+  },
+  {
+    "id": "routing-clear-canvas",
+    "suite": "routing",
+    "input": "Clear the entire canvas",
+    "difficulty": "easy",
+    "tags": ["destructive", "clear"],
+    "expected": {
+      "routing": { "requiredTools": ["clearCanvas"], "forbiddenTools": ["deleteElements", "drawElements"] }
+    }
+  },
+  {
+    "id": "routing-explicit-mermaid",
+    "suite": "routing",
+    "input": "Use Mermaid to draw a left-to-right flow from Browser to API to Database",
+    "difficulty": "easy",
+    "tags": ["mermaid"],
+    "expected": {
+      "routing": { "requiredTools": ["drawDiagramUsingMermaid"], "forbiddenTools": ["drawElements"] }
+    }
+  },
+  {
+    "id": "routing-known-element-delete",
+    "suite": "routing",
+    "input": "Delete the Cache box",
+    "difficulty": "medium",
+    "tags": ["delete", "state"],
+    "seed": {
+      "priorPrompt": "Draw API and Cache boxes",
+      "priorResponse": "Created the API and Cache boxes.",
+      "elements": [
+        { "id": "api", "type": "rectangle", "x": 0, "y": 0, "width": 200, "height": 80, "label": { "text": "API" } },
+        { "id": "cache", "type": "rectangle", "x": 300, "y": 0, "width": 200, "height": 80, "label": { "text": "Cache" } }
+      ]
+    },
+    "expected": {
+      "routing": { "requiredTools": ["deleteElements"], "forbiddenTools": ["drawElements", "modifyElements", "clearCanvas", "getCanvasState"] }
+    }
+  },
+  {
+    "id": "routing-current-information",
+    "suite": "routing",
+    "input": "Search the web for the current stable Kubernetes version before recommending what to label a cluster diagram",
+    "difficulty": "medium",
+    "tags": ["web", "freshness"],
+    "expected": {
+      "routing": { "requiredTools": ["webSearchTool"], "forbiddenTools": ["knowledgeSearchTool", "drawElements", "drawDiagramUsingMermaid"] }
+    }
+  },
+  {
+    "id": "routing-internal-knowledge",
+    "suite": "routing",
+    "input": "Look in the knowledge base for our authentication architecture",
+    "difficulty": "medium",
+    "tags": ["rag"],
+    "expected": {
+      "routing": { "requiredTools": ["knowledgeSearchTool"], "forbiddenTools": ["webSearchTool", "drawElements"] }
+    }
+  },
+  {
+    "id": "routing-non-canvas-question",
+    "suite": "routing",
+    "input": "Briefly explain the difference between horizontal and vertical scaling. Do not draw anything.",
+    "difficulty": "easy",
+    "tags": ["negative", "no-tool"],
+    "expected": {
+      "routing": { "requiredTools": [], "forbiddenTools": ["drawElements", "modifyElements", "deleteElements", "clearCanvas", "drawDiagramUsingMermaid", "webSearchTool", "knowledgeSearchTool", "getCanvasState"] },
+      "response": { "maxWords": 80, "requiredPhrases": [], "forbiddenPhrases": ["created the diagram", "drawn"] }
+    }
+  },
+  {
+    "id": "routing-known-element-modify-not-redraw",
+    "suite": "routing",
+    "input": "Rename Worker to Queue Consumer",
+    "difficulty": "medium",
+    "tags": ["modify", "state"],
+    "seed": {
+      "priorPrompt": "Draw a Worker box",
+      "priorResponse": "Created the Worker box.",
+      "elements": [
+        { "id": "worker", "type": "rectangle", "x": 0, "y": 0, "width": 200, "height": 80, "label": { "text": "Worker" } }
+      ]
+    },
+    "expected": {
+      "routing": { "requiredTools": ["modifyElements"], "forbiddenTools": ["drawElements", "deleteElements", "getCanvasState"] }
+    }
+  }
+]
