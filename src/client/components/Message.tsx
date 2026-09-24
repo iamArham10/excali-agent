@@ -1,16 +1,14 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { isToolUIPart, getToolName, type UIMessage } from "ai";
 import MarkdownRenderer from "./MarkdownRenderer";
+import ReasoningBlock from "./ReasoningBlock";
 import ToolApprovalCard from "./ToolApprovalCard";
-import ToolReceipt from "./ToolReceipt";
-import {
-    getToolPresentation,
-    getToolDetail,
-    getCompletedToolText,
-} from "./ToolPresentation";
+import ToolCallCard, { deriveToolStatus } from "./ToolCallCard";
+import { getToolDetail, getToolPresentation } from "./ToolPresentation";
 
 type MessageProps = {
     message: UIMessage;
+    isStreaming?: boolean;
     pendingToolCallIds?: Set<string>;
     toolDecisions?: Record<string, boolean>;
     onToolDecision?: (toolCallId: string, approved: boolean) => void;
@@ -20,8 +18,49 @@ type MessageProps = {
     }) => void;
 };
 
+type Part = UIMessage["parts"][number];
+type Block =
+    | { kind: "text"; text: string; key: string }
+    | { kind: "reasoning"; text: string; streaming: boolean; key: string }
+    | { kind: "tools"; parts: Part[]; key: string };
+
+/** Merge the flat part stream into readable blocks: text, one thinking block, grouped tool steps. */
+function toBlocks(parts: Part[]): Block[] {
+    const blocks: Block[] = [];
+    parts.forEach((part, index) => {
+        const last = blocks[blocks.length - 1];
+        if (part.type === "text") {
+            if (part.text.trim())
+                blocks.push({
+                    kind: "text",
+                    text: part.text,
+                    key: `t${index}`,
+                });
+        } else if (part.type === "reasoning") {
+            const streaming = "state" in part && part.state === "streaming";
+            if (last?.kind === "reasoning") {
+                last.text += `\n\n${part.text}`;
+                last.streaming = last.streaming || streaming;
+            } else {
+                blocks.push({
+                    kind: "reasoning",
+                    text: part.text,
+                    streaming,
+                    key: `r${index}`,
+                });
+            }
+        } else if (isToolUIPart(part)) {
+            if (last?.kind === "tools") last.parts.push(part);
+            else
+                blocks.push({ kind: "tools", parts: [part], key: `k${index}` });
+        }
+    });
+    return blocks;
+}
+
 export default function Message({
     message,
+    isStreaming = false,
     pendingToolCallIds,
     toolDecisions,
     onToolDecision,
@@ -37,7 +76,6 @@ export default function Message({
     ) => {
         if (submittingIds.has(toolCallId)) return;
         setSubmittingIds((current) => new Set(current).add(toolCallId));
-
         try {
             onToolApprovalResponse?.({ id: approvalId, approved });
         } catch {
@@ -49,114 +87,106 @@ export default function Message({
         }
     };
 
+    if (isUser) {
+        const text = message.parts
+            .map((part) => (part.type === "text" ? part.text : ""))
+            .join("")
+            .trim();
+        return (
+            <article className="message message--user">
+                <div className="message__bubble">{text}</div>
+            </article>
+        );
+    }
+
+    const renderTool = (part: Part, index: number): ReactNode => {
+        if (!isToolUIPart(part)) return null;
+        const toolName = getToolName(part);
+        const presentation = getToolPresentation(toolName);
+        const isClientPending = pendingToolCallIds?.has(part.toolCallId);
+        const isServerPending =
+            "approval" in part && part.state === "approval-requested";
+        const input = "input" in part ? part.input : undefined;
+        const key = part.toolCallId || index;
+
+        if (isClientPending || isServerPending) {
+            const decide = (approved: boolean) => {
+                if (isClientPending)
+                    onToolDecision?.(part.toolCallId, approved);
+                if (
+                    isServerPending &&
+                    "approval" in part &&
+                    part.approval?.id
+                ) {
+                    submitServerDecision(
+                        part.toolCallId,
+                        part.approval.id,
+                        approved,
+                    );
+                }
+            };
+            return (
+                <ToolApprovalCard
+                    key={key}
+                    presentation={presentation}
+                    detail={getToolDetail(
+                        input as Record<string, unknown> | undefined,
+                    )}
+                    isSubmitting={submittingIds.has(part.toolCallId)}
+                    onDeny={() => decide(false)}
+                    onApprove={() => decide(true)}
+                />
+            );
+        }
+
+        const status = deriveToolStatus(
+            part.state,
+            "output" in part ? part.output : undefined,
+            toolDecisions?.[part.toolCallId],
+        );
+        return (
+            <ToolCallCard
+                key={key}
+                toolName={toolName}
+                status={status}
+                input={input}
+                output={"output" in part ? part.output : undefined}
+                errorText={"errorText" in part ? part.errorText : undefined}
+            />
+        );
+    };
+
+    const blocks = toBlocks(message.parts);
+    if (blocks.length === 0) return null;
+
     return (
-        <article className={`message ${isUser ? "message-user" : "message-assistant"}`}>
-            <div className="message-role">{isUser ? "You" : "Excali"}</div>
-            <div className="message-body">
-                {message.parts.map((part, index) => {
-                    if (part.type === "text") {
-                        if (!part.text.trim()) return null;
+        <article className="message message--assistant">
+            <div className="message__avatar" aria-hidden="true">
+                <span />
+            </div>
+            <div className="message__body">
+                {blocks.map((block) => {
+                    if (block.kind === "text") {
                         return (
-                            <div className="message-text" key={index}>
-                                <MarkdownRenderer content={part.text} />
+                            <div className="message__text" key={block.key}>
+                                <MarkdownRenderer content={block.text} />
                             </div>
                         );
                     }
-
-                    // Reasoning arrives as many stream parts. MessageList renders one
-                    // status indicator for the active response instead of one per part.
-                    if (part.type === "reasoning") return null;
-                    if (!isToolUIPart(part)) return null;
-
-                    const toolName = getToolName(part);
-                    const presentation = getToolPresentation(toolName);
-                    const isClientPending = pendingToolCallIds?.has(part.toolCallId);
-                    const isServerPending =
-                        "approval" in part &&
-                        part.state === "approval-requested";
-                    const isPending = isClientPending || isServerPending;
-                    const isSubmitting = submittingIds.has(part.toolCallId);
-                    const decision = toolDecisions?.[part.toolCallId];
-                    const input =
-                        "input" in part
-                            ? (part.input as Record<string, unknown> | undefined)
-                            : undefined;
-
-                    if (isPending) {
-                        const detail = getToolDetail(toolName, input);
-
+                    if (block.kind === "reasoning") {
                         return (
-                            <ToolApprovalCard
-                                key={part.toolCallId || index}
-                                presentation={presentation}
-                                detail={detail}
-                                isSubmitting={isSubmitting}
-                                onDeny={() => {
-                                    if (isClientPending) {
-                                        onToolDecision?.(part.toolCallId, false);
-                                    }
-                                    if (
-                                        isServerPending &&
-                                        "approval" in part &&
-                                        part.approval?.id
-                                    ) {
-                                        submitServerDecision(
-                                            part.toolCallId,
-                                            part.approval.id,
-                                            false,
-                                        );
-                                    }
-                                }}
-                                onApprove={() => {
-                                    if (isClientPending) {
-                                        onToolDecision?.(part.toolCallId, true);
-                                    }
-                                    if (
-                                        isServerPending &&
-                                        "approval" in part &&
-                                        part.approval?.id
-                                    ) {
-                                        submitServerDecision(
-                                            part.toolCallId,
-                                            part.approval.id,
-                                            true,
-                                        );
-                                    }
-                                }}
+                            <ReasoningBlock
+                                key={block.key}
+                                text={block.text}
+                                streaming={block.streaming && isStreaming}
                             />
                         );
                     }
-
-                    if (decision === true || part.state === "output-available") {
-                        return (
-                            <ToolReceipt
-                                key={part.toolCallId || index}
-                                icon="✓"
-                                text={getCompletedToolText(toolName, presentation.title, input)}
-                            />
-                        );
-                    }
-
-                    if (
-                        decision === false ||
-                        part.state === "output-error" ||
-                        part.state === "output-denied"
-                    ) {
-                        return (
-                            <ToolReceipt
-                                key={part.toolCallId || index}
-                                icon="×"
-                                text={
-                                    part.state === "output-error"
-                                        ? `${presentation.title} failed`
-                                        : `${presentation.title} denied`
-                                }
-                                error
-                            />
-                        );
-                    }
-
-                    return null;
+                    return (
+                        <div className="tool-steps" key={block.key}>
+                            {block.parts.map(renderTool)}
+                        </div>
+                    );
                 })}
             </div>
         </article>

@@ -7,8 +7,21 @@
             name="description"
             content="Generate and edit technical diagrams with an AI-assisted Excalidraw workspace."
         />
-        <meta name="theme-color" content="#fafaf9" />
+        <meta name="theme-color" content="#f7f7f8" />
         <title>Excali — Technical diagram workspace</title>
+        <script>
+            (function () {
+                var stored = localStorage.getItem("excali-theme");
+                var theme =
+                    stored === "light" || stored === "dark"
+                        ? stored
+                        : window.matchMedia("(prefers-color-scheme: dark)")
+                                .matches
+                          ? "dark"
+                          : "light";
+                document.documentElement.dataset.theme = theme;
+            })();
+        </script>
     </head>
     <body>
         <div id="root"></div>

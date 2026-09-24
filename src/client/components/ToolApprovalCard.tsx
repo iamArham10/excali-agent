@@ -1,3 +1,4 @@
+import { Icon } from "./Icons";
 import type { ToolPresentation } from "./ToolPresentation";
 
 type ToolApprovalCardProps = {
@@ -17,38 +18,42 @@ export default function ToolApprovalCard({
 }: ToolApprovalCardProps) {
     return (
         <section
-            className={`approval-card ${presentation.destructive ? "approval-card-danger" : ""}`}
+            className={`approval-card ${presentation.destructive ? "approval-card--danger" : ""}`}
             aria-label={`${presentation.title} approval`}
         >
-            <div className="approval-heading">
-                <span className="tool-icon" aria-hidden="true">
-                    {presentation.icon}
+            <div className="approval-card__heading">
+                <span className="approval-card__icon">
+                    <Icon name={presentation.icon} size={16} />
                 </span>
-                <div>
-                    <span className="approval-eyebrow">Permission requested</span>
+                <div className="approval-card__copy">
+                    <span className="approval-card__eyebrow">
+                        Approval needed
+                    </span>
                     <h3>{presentation.title}</h3>
                 </div>
             </div>
             <p>{presentation.description}</p>
-            {detail && <div className="tool-detail">{detail}</div>}
-            <div className="approval-actions">
+            {detail && <div className="approval-card__detail">{detail}</div>}
+            <div className="approval-card__actions">
                 <button
                     type="button"
-                    className="button-secondary"
+                    className="btn btn--ghost"
                     disabled={isSubmitting}
                     onClick={onDeny}
                 >
-                    Deny
+                    Skip
                 </button>
                 <button
                     type="button"
-                    className={
-                        presentation.destructive ? "button-danger" : "button-primary"
-                    }
+                    className={`btn ${presentation.destructive ? "btn--danger" : "btn--primary"}`}
                     disabled={isSubmitting}
                     onClick={onApprove}
                 >
-                    {isSubmitting ? "Submitting…" : "Allow once"}
+                    {isSubmitting
+                        ? "Submitting…"
+                        : presentation.destructive
+                          ? "Yes, continue"
+                          : "Allow"}
                 </button>
             </div>
         </section>

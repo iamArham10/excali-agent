@@ -1,52 +1,60 @@
+import type { IconName } from "./Icons";
+
 export type ToolPresentation = {
     title: string;
     description: string;
-    icon: string;
+    icon: IconName;
     destructive?: boolean;
+    /** Shown while the tool input streams in / while it runs. */
+    runningText: string;
 };
 
 export const TOOL_PRESENTATION: Record<string, ToolPresentation> = {
-    drawElements: {
-        title: "Draw elements",
-        description: "Add new shapes and connections to the canvas.",
-        icon: "+",
+    createDiagram: {
+        title: "Create diagram",
+        description: "Lay out and draw a new diagram on the canvas.",
+        icon: "diagram",
+        runningText: "Drawing diagram",
     },
-    modifyElements: {
-        title: "Update elements",
-        description: "Apply the requested changes to the canvas.",
-        icon: "↻",
+    updateDiagram: {
+        title: "Update diagram",
+        description: "Apply the requested changes to an existing diagram.",
+        icon: "update",
+        runningText: "Updating diagram",
     },
-    deleteElements: {
-        title: "Delete elements",
-        description: "Remove selected elements and their connections.",
-        icon: "−",
+    deleteDiagram: {
+        title: "Delete diagram",
+        description: "Remove an entire diagram from the canvas.",
+        icon: "trash",
         destructive: true,
+        runningText: "Deleting diagram",
     },
     clearCanvas: {
         title: "Clear the canvas",
-        description: "Remove every element from the current canvas.",
-        icon: "!",
+        description:
+            "Remove every element from the current canvas. This can be undone with Ctrl+Z.",
+        icon: "eraser",
         destructive: true,
+        runningText: "Clearing canvas",
     },
     getCanvasState: {
-        title: "Read the canvas",
-        description: "Inspect the current elements to understand the diagram.",
-        icon: "◇",
+        title: "Read canvas",
+        description: "Inspect the diagrams currently on the canvas.",
+        icon: "eye",
+        runningText: "Reading canvas",
     },
     webSearchTool: {
         title: "Search the web",
         description: "Send this query to the web search provider.",
-        icon: "↗",
+        icon: "globe",
+        runningText: "Searching the web",
     },
     knowledgeSearchTool: {
-        title: "Search the knowledge base",
-        description: "Look for relevant information in the connected documents.",
-        icon: "⌕",
-    },
-    drawDiagramUsingMermaid: {
-        title: "Draw Mermaid Diagram",
-        description: "Converting Mermaid syntax to diagram",
-        icon: "📊",
+        title: "Search knowledge base",
+        description:
+            "Look for relevant information in the connected documents.",
+        icon: "book",
+        runningText: "Searching knowledge base",
     },
 };
 
@@ -55,53 +63,131 @@ export function getToolPresentation(toolName: string): ToolPresentation {
         TOOL_PRESENTATION[toolName] ?? {
             title: humanizeToolName(toolName),
             description: "Allow the assistant to perform this action.",
-            icon: "◇",
+            icon: "sparkle",
+            runningText: humanizeToolName(toolName),
         }
     );
 }
 
 export function humanizeToolName(value: string) {
-    const words = value.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/Tool$/, "");
-    return words.charAt(0).toUpperCase() + words.slice(1);
+    const words = value
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/ Tool$/, "");
+    return words.charAt(0).toUpperCase() + words.slice(1).toLowerCase();
 }
 
-export function getToolDetail(
-    toolName: string,
-    input: Record<string, unknown> | undefined,
-) {
-    if (!input) return null;
+// ---------------------------------------------------------------------------
+// Input / output interpretation
+// ---------------------------------------------------------------------------
 
-    if (typeof input.query === "string") {
-        return `“${input.query}”`;
+export type DiagramSummary = {
+    type: string;
+    diagramId: string;
+    title?: string;
+    labels: string[];
+    counts: string[];
+};
+
+export function getDiagramSummary(input: unknown): DiagramSummary | null {
+    if (!input || typeof input !== "object") return null;
+    const diagram = (input as { diagram?: unknown }).diagram;
+    if (!diagram || typeof diagram !== "object") return null;
+    const d = diagram as Record<string, unknown>;
+    const list = (key: string) =>
+        Array.isArray(d[key]) ? (d[key] as Record<string, unknown>[]) : [];
+    const plural = (n: number, noun: string) =>
+        `${n} ${noun}${n === 1 ? "" : "s"}`;
+
+    const isSequence = d.type === "sequence";
+    const items = isSequence ? list("participants") : list("nodes");
+    const counts = isSequence
+        ? [
+              plural(items.length, "participant"),
+              plural(list("messages").length, "message"),
+          ]
+        : [
+              plural(items.length, "node"),
+              plural(list("edges").length, "edge"),
+              ...(list("groups").length
+                  ? [plural(list("groups").length, "group")]
+                  : []),
+          ];
+
+    return {
+        type: typeof d.type === "string" ? d.type : "diagram",
+        diagramId: typeof d.diagramId === "string" ? d.diagramId : "",
+        title: typeof d.title === "string" ? d.title : undefined,
+        labels: items
+            .map((item) =>
+                typeof item?.label === "string"
+                    ? item.label.replace(/\n/g, " ")
+                    : "",
+            )
+            .filter(Boolean),
+        counts,
+    };
+}
+
+export type ToolReport = {
+    ok: boolean;
+    message?: string;
+    warnings: string[];
+    errors: string[];
+};
+
+/** Client tools answer with a JSON ToolReport string (or plain text). */
+export function parseToolReport(output: unknown): ToolReport | null {
+    let value = output;
+    if (typeof value === "string") {
+        try {
+            value = JSON.parse(value);
+        } catch {
+            return null;
+        }
     }
+    if (!value || typeof value !== "object" || !("ok" in value)) return null;
+    const report = value as Record<string, unknown>;
+    const strings = (key: string) =>
+        Array.isArray(report[key])
+            ? (report[key] as unknown[]).map(String)
+            : [];
+    return {
+        ok: report.ok === true,
+        message:
+            typeof report.message === "string" ? report.message : undefined,
+        warnings: strings("warnings"),
+        errors: strings("errors"),
+    };
+}
 
-    if (Array.isArray(input.elements)) {
-        const count = input.elements.length;
-        return `${count} element${count === 1 ? "" : "s"}`;
+export type SearchSource = { title: string; url?: string };
+
+export function getSearchSources(output: unknown): SearchSource[] | null {
+    if (Array.isArray(output)) {
+        return output.map((item: Record<string, unknown>) => ({
+            title: String(item?.source ?? "Document"),
+        }));
     }
-
-    if (toolName === "clearCanvas") {
-        return "This action cannot be undone from the chat.";
+    if (
+        output &&
+        typeof output === "object" &&
+        Array.isArray((output as { results?: unknown }).results)
+    ) {
+        return (output as { results: Record<string, unknown>[] }).results.map(
+            (result) => ({
+                title: String(result.title ?? result.url ?? "Result"),
+                url: typeof result.url === "string" ? result.url : undefined,
+            }),
+        );
     }
-
     return null;
 }
 
-export function getCompletedToolText(
-    toolName: string,
-    fallbackTitle: string,
-    input: Record<string, unknown> | undefined,
-) {
-    const count = Array.isArray(input?.elements) ? input.elements.length : null;
-
-    if (count !== null) {
-        const noun = count === 1 ? "element" : "elements";
-        if (toolName === "drawElements") return `Added ${count} ${noun}`;
-        if (toolName === "modifyElements") return `Updated ${count} ${noun}`;
-        if (toolName === "deleteElements") return `Removed ${count} ${noun}`;
-    }
-
-    if (toolName === "clearCanvas") return "Cleared canvas";
-    if (toolName === "getCanvasState") return "Read canvas state";
-    return `${fallbackTitle} completed`;
+export function getToolDetail(input: Record<string, unknown> | undefined) {
+    if (!input) return null;
+    if (typeof input.query === "string") return `“${input.query}”`;
+    const diagram = getDiagramSummary(input);
+    if (diagram) return `${diagram.type} · ${diagram.diagramId}`;
+    if (typeof input.diagramId === "string") return input.diagramId;
+    return null;
 }

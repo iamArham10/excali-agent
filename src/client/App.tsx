@@ -7,7 +7,9 @@ import { ChatInput } from "./components/ChatInput";
 import MessageList from "./components/MessageList";
 import { useExcaliDrawHook } from "./hooks/useExcaliDrawHook";
 import { useResizableSidebar } from "./hooks/useResizableSidebar";
+import { useTheme } from "./hooks/useTheme";
 import { useToolDispatcher } from "./hooks/useToolDispatcher";
+import { Icon } from "./components/Icons";
 
 const sessionId = crypto.randomUUID();
 const AUTO_APPROVED_CLIENT_TOOLS = new Set([
@@ -19,6 +21,7 @@ const AUTO_APPROVED_CLIENT_TOOLS = new Set([
 export default function App() {
     const agent = useAgent({ agent: "ExcaliAgent", name: sessionId });
     const { bindApi, service, api } = useExcaliDrawHook();
+    const { theme, toggleTheme } = useTheme();
     const chatScrollRef = useRef<HTMLDivElement>(null);
     const shouldAutoScrollRef = useRef(true);
     const [isAssistantCollapsed, setIsAssistantCollapsed] = useState(false);
@@ -36,12 +39,8 @@ export default function App() {
         {},
     );
 
-    const {
-        assistantWidth,
-        workspaceStyle,
-        beginResize,
-        handleKeyDown,
-    } = useResizableSidebar();
+    const { assistantWidth, workspaceStyle, beginResize, handleKeyDown } =
+        useResizableSidebar();
 
     const executeTool = useToolDispatcher(service, api);
 
@@ -63,6 +62,10 @@ export default function App() {
         messages,
         sendMessage,
         status,
+        error,
+        stop,
+        regenerate,
+        clearError,
         clearHistory,
         addToolApprovalResponse,
     } = useAgentChat({
@@ -96,6 +99,18 @@ export default function App() {
     const [input, setInput] = useState("");
     const isBusy = status === "submitted" || status === "streaming";
 
+    const startNewChat = () => {
+        stop();
+        for (const resolve of pendingResolversRef.current.values())
+            resolve(false);
+        pendingResolversRef.current.clear();
+        setPendingToolCallIds(new Set());
+        setToolDecisions({});
+        clearError();
+        clearHistory();
+        setInput("");
+    };
+
     useEffect(() => {
         clearHistory();
     }, []);
@@ -118,6 +133,14 @@ export default function App() {
         [],
     );
 
+    const sendPrompt = (text: string) => {
+        if (!text.trim() || isBusy) return;
+        clearError();
+        sendMessage({ text });
+        setInput("");
+        shouldAutoScrollRef.current = true;
+    };
+
     return (
         <main
             className={`app-shell ${isAssistantCollapsed ? "assistant-collapsed" : ""}`}
@@ -138,17 +161,14 @@ export default function App() {
                     onClick={() => setMobileView("assistant")}
                 >
                     Assistant
-                    {isBusy && (
-                        <span
-                            className="mobile-activity-dot"
-                            aria-label="Working"
-                        />
-                    )}
+                    {isBusy && <span className="mobile-activity-dot" aria-label="Working" />}
                 </button>
             </nav>
+
             <section className="canvas-panel" aria-label="Drawing canvas">
-                <Excalidraw excalidrawAPI={bindApi} />
+                <Excalidraw excalidrawAPI={bindApi} theme={theme} />
             </section>
+
             <div
                 className="panel-resize-handle"
                 role="separator"
@@ -161,44 +181,51 @@ export default function App() {
                 onPointerDown={beginResize}
                 onKeyDown={handleKeyDown}
             />
+
             <aside className="chat-panel" aria-label="Diagram assistant">
                 <header className="chat-header">
-                    <div className="brand-mark" aria-hidden="true">
-                        <span />
-                        <span />
-                        <span />
+                    <div className="brand">
+                        <div className="brand__mark" aria-hidden="true">
+                            <Icon name="diagram" size={16} />
+                        </div>
+                        <div className="brand__copy">
+                            <h1>Excali</h1>
+                            <p className={isBusy ? "is-busy" : ""}>
+                                <span className="status-dot" />
+                                {isBusy ? "Working…" : "Diagram assistant"}
+                            </p>
+                        </div>
                     </div>
-                    <div className="header-copy">
-                        <h1>EXCALI</h1>
-                        <p>Diagram workspace</p>
+                    <div className="chat-header__actions">
+                        <button
+                            type="button"
+                            className="icon-button hide-when-collapsed"
+                            aria-label="New chat"
+                            title="New chat"
+                            onClick={startNewChat}
+                            disabled={messages.length === 0}
+                        >
+                            <Icon name="plus" size={16} />
+                        </button>
+                        <button
+                            type="button"
+                            className="icon-button hide-when-collapsed"
+                            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                            title={theme === "dark" ? "Light mode" : "Dark mode"}
+                            onClick={toggleTheme}
+                        >
+                            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
+                        </button>
+                        <button
+                            type="button"
+                            className="icon-button collapse-toggle"
+                            aria-label={isAssistantCollapsed ? "Expand assistant panel" : "Collapse assistant panel"}
+                            title={isAssistantCollapsed ? "Expand" : "Collapse"}
+                            onClick={() => setIsAssistantCollapsed((collapsed) => !collapsed)}
+                        >
+                            <Icon name="sidebar" size={16} />
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        className="panel-toggle"
-                        aria-label={
-                            isAssistantCollapsed
-                                ? "Expand assistant panel"
-                                : "Collapse assistant panel"
-                        }
-                        title={
-                            isAssistantCollapsed
-                                ? "Expand assistant panel"
-                                : "Collapse assistant panel"
-                        }
-                        onClick={() =>
-                            setIsAssistantCollapsed((collapsed) => !collapsed)
-                        }
-                    >
-                        <svg viewBox="0 0 20 20" aria-hidden="true">
-                            <path
-                                d={
-                                    isAssistantCollapsed
-                                        ? "m7.5 5 5 5-5 5"
-                                        : "m12.5 5-5 5 5 5"
-                                }
-                            />
-                        </svg>
-                    </button>
                 </header>
 
                 <div
@@ -207,35 +234,37 @@ export default function App() {
                     onScroll={(event) => {
                         const element = event.currentTarget;
                         const distanceFromBottom =
-                            element.scrollHeight -
-                            element.scrollTop -
-                            element.clientHeight;
+                            element.scrollHeight - element.scrollTop - element.clientHeight;
                         shouldAutoScrollRef.current = distanceFromBottom < 96;
                     }}
                 >
                     <MessageList
                         messages={messages}
                         status={status}
+                        errorMessage={error?.message}
                         pendingToolCallIds={pendingToolCallIds}
                         toolDecisions={toolDecisions}
                         onToolDecision={handleToolDecision}
                         onToolApprovalResponse={addToolApprovalResponse}
                         onPromptSelect={(prompt) => {
-                            setInput(prompt);
                             setMobileView("assistant");
+                            sendPrompt(prompt);
+                        }}
+                        onRetry={() => {
+                            clearError();
+                            regenerate();
                         }}
                     />
                 </div>
+
                 <ChatInput
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onSubmit={(e) => {
                         e.preventDefault();
-                        if (!input.trim()) return;
-                        sendMessage({ text: input });
-                        setInput("");
-                        shouldAutoScrollRef.current = true;
+                        sendPrompt(input);
                     }}
+                    onStop={stop}
                     busy={isBusy}
                 />
             </aside>
