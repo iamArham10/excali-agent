@@ -1,99 +1,74 @@
-import type { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/data/transform";
-import type { ExcaliDrawService } from "../services/excalidrawService";
-import { serializeCanvasState } from "../services/serializeCanvasState";
+import type {
+    ExcaliDrawService,
+    ToolReport,
+} from "../services/excalidrawService";
+import type {
+    CreateDiagramInput,
+    DeleteDiagramInput,
+    UpdateDiagramInput,
+} from "../../shared/schemas/diagram-schema";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+
+type ToolCall = { toolName: string; toolCallId: string; input: unknown };
 
 export function useToolDispatcher(
     service: ExcaliDrawService,
-    api: ExcalidrawImperativeAPI | null
+    api: ExcalidrawImperativeAPI | null,
 ) {
+    const run = async (
+        toolCall: ToolCall,
+    ): Promise<string | ToolReport | null> => {
+        switch (toolCall.toolName) {
+            case "createDiagram": {
+                const { diagram } = toolCall.input as CreateDiagramInput;
+                return service.createDiagram(diagram);
+            }
+            case "updateDiagram": {
+                const { diagram, relayout } =
+                    toolCall.input as UpdateDiagramInput;
+                return service.updateDiagram(diagram, relayout);
+            }
+            case "deleteDiagram": {
+                const { diagramId } = toolCall.input as DeleteDiagramInput;
+                return service.deleteDiagram(diagramId);
+            }
+            case "getCanvasState":
+                return api ? service.getCanvasState() : "canvas is empty";
+            case "clearCanvas":
+                service.clearCanvas();
+                return "Canvas cleared";
+            default:
+                return null; // not a client tool
+        }
+    };
+
     const executeTool = async ({
         toolCall,
         addToolOutput,
     }: {
-        toolCall: any;
+        toolCall: ToolCall;
         addToolOutput: (output: { toolCallId: string; output: string }) => void;
     }) => {
-        if (toolCall.toolName === "drawDiagramUsingMermaid") {
-            const { mermaidString } = toolCall.input as {
-                mermaidString: string;
+        let output: string | ToolReport | null;
+        try {
+            output = await run(toolCall);
+        } catch (error) {
+            // Always answer the tool call, otherwise the chat stalls waiting for it.
+            console.error(`${toolCall.toolName} crashed`, error);
+            output = {
+                ok: false,
+                message:
+                    `${toolCall.toolName} failed with an internal canvas error (not a problem with the spec): ` +
+                    `${error instanceof Error ? error.message : String(error)}. ` +
+                    "Do not resend the same call; tell the user drawing failed.",
             };
-
-            if (await service.drawMermaidDiagram(mermaidString)) {
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `Diagram drawn successfully`,
-                });
-            } else {
-                addToolOutput({
-                    toolCallId: toolCall.toolCallId,
-                    output: `Error, diagram was not drawn successfully`,
-                });
-            }
         }
-
-        if (toolCall.toolName === "clearCanvas") {
-            addToolOutput({
-                toolCallId: toolCall.toolCallId,
-                output: `${service.clearCanvas() ? "Canvas Cleared" : "Could not clear the canvas"}`,
-            });
-        }
-
-        if (toolCall.toolName === "getCanvasState") {
-            addToolOutput({
-                toolCallId: toolCall.toolCallId,
-                output: `${api ? serializeCanvasState(service.getCanvasState()) : "canvas is empty"}`,
-            });
-        }
-
-        if (toolCall.toolName === "drawElements") {
-            const { elements } = toolCall.input as {
-                elements: ExcalidrawElementSkeleton[];
-            };
-            service.createElements(elements);
-
-            addToolOutput({
-                toolCallId: toolCall.toolCallId,
-                output: `created ${elements.length} new elements`,
-            });
-        }
-
-        if (toolCall.toolName === "deleteElements") {
-            const { elements } = toolCall.input as {
-                elements: { id: string }[];
-            };
-
-            service.deleteElements(elements);
-
-            addToolOutput({
-                toolCallId: toolCall.toolCallId,
-                output: `deleted ${elements.length} new elements`,
-            });
-        }
-
-        if (toolCall.toolName === "modifyElements") {
-            let elements = (
-                toolCall.input as {
-                    elements: ({
-                        id: string;
-                        label?: {
-                            text?: string;
-                            fontSize?: number;
-                            fontFamily?: number;
-                            textAlign?: "left" | "center" | "right";
-                            verticalAlign?: "top" | "middle" | "bottom";
-                        };
-                    } & Partial<ExcalidrawElementSkeleton>)[];
-                }
-            ).elements;
-
-            service.modifyElements(elements);
-
-            addToolOutput({
-                toolCallId: toolCall.toolCallId,
-                output: `modified ${elements.length} new elements`,
-            });
-        }
+        if (output === null) return;
+        addToolOutput({
+            toolCallId: toolCall.toolCallId,
+            output:
+                typeof output === "string" ? output : JSON.stringify(output),
+        });
     };
 
     return executeTool;

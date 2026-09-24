@@ -2,44 +2,42 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import {
-    DrawElementsToolSchema,
-    ModifyElementsToolSchema,
-    DeleteElementsToolSchema,
-} from "../../../shared/schemas/excali-schema";
+    CreateDiagramToolSchema,
+    DeleteDiagramToolSchema,
+    UpdateDiagramToolSchema,
+} from "../../../shared/schemas/diagram-schema";
 
-export const drawElements = tool({
+export const createDiagram = tool({
     description:
-        "Draw one or more elements on the canvas. Supports shapes (rectangle, " +
-        "ellipse, diamond), text, straight lines, and arrows. Elements support " +
-        "colors, fill and stroke styles, opacity, rotation, and typography. " +
-        "Shapes, lines, and arrows can have styled labels; arrows can reference " +
-        "shapes by id within the same call.",
-    inputSchema: DrawElementsToolSchema,
+        "Create a new technical diagram (architecture, flowchart, or sequence) from a semantic spec. " +
+        "Layout, sizing, styling, and arrow routing are computed automatically: never provide coordinates. " +
+        "The new diagram is placed beside existing content without touching it.",
+    inputSchema: CreateDiagramToolSchema,
 });
 
-export const modifyElements = tool({
+export const updateDiagram = tool({
     description:
-        "Modify the geometry, text, labels, colors, fill and stroke styles, " +
-        "opacity, rotation, typography, or arrowheads of one or more existing " +
-        "elements. Use id to reference each element and always include its type. " +
-        "Only include properties that should change.",
-    inputSchema: ModifyElementsToolSchema,
+        "Change an existing diagram by sending its COMPLETE new spec (same diagramId). Nodes, edges, " +
+        "and groups are matched by id: unchanged nodes keep their current position (including positions " +
+        "the user dragged), new nodes are placed next to their neighbours, and omitted items are removed. " +
+        "Use this for every edit, including renames, additions, removals, and recoloring.",
+    inputSchema: UpdateDiagramToolSchema,
 });
 
-export const deleteElements = tool({
-    description:
-        "delete one or more elements on the canvas. " +
-        "Also deletes labels bound to the deleted elements and any arrows " +
-        "connected to them.",
-    inputSchema: DeleteElementsToolSchema,
+export const deleteDiagram = tool({
+    description: "Delete an entire diagram from the canvas by diagramId.",
+    inputSchema: DeleteDiagramToolSchema,
 });
 
 export const getCanvasState = tool({
-    description: "Get Canvas State, the elements currently on the canvas",
+    description:
+        "Read the diagrams currently on the canvas as specs (including edits the user made by hand). " +
+        "Call this before editing when you don't already know the current spec from this conversation.",
     inputSchema: z.object({}),
 });
 
 export const clearCanvas = tool({
-    description: "Clear the canvas, remove all elements",
+    description:
+        "Remove everything from the canvas. Only use when the user explicitly asks.",
     inputSchema: z.object({}),
 });

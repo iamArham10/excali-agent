@@ -4,8 +4,7 @@ import { buildMessages } from "./lib/build-messages";
 import { loadDataset } from "./lib/load-dataset";
 import { diagramScorer } from "./scorers/diagram-scorer";
 import { editingScorer } from "./scorers/editing-scorer";
-import { geometryScorer } from "./scorers/geometry-scorer";
-import { mermaidScorer } from "./scorers/mermaid-scorer";
+
 import { researchScorer } from "./scorers/research-scorer";
 import { responseScorer } from "./scorers/response-scorer";
 import { routingScorer } from "./scorers/routing-scorer";
@@ -18,16 +17,13 @@ const suiteConfigurations = {
     },
     creation: {
         dataset: "creation.json",
-        scorers: [routingScorer, schemaScorer, diagramScorer, geometryScorer],
+        scorers: [routingScorer, schemaScorer, diagramScorer],
     },
     editing: {
         dataset: "editing.json",
         scorers: [routingScorer, schemaScorer, editingScorer],
     },
-    mermaid: {
-        dataset: "mermaid.json",
-        scorers: [routingScorer, schemaScorer, mermaidScorer],
-    },
+
     research: {
         dataset: "research.json",
         scorers: [routingScorer, schemaScorer, researchScorer],
@@ -38,7 +34,10 @@ type SuiteName = keyof typeof suiteConfigurations;
 
 const requestedSuite = process.env.EVAL_SUITE ?? "all";
 const suiteNames = Object.keys(suiteConfigurations) as SuiteName[];
-if (requestedSuite !== "all" && !suiteNames.includes(requestedSuite as SuiteName)) {
+if (
+    requestedSuite !== "all" &&
+    !suiteNames.includes(requestedSuite as SuiteName)
+) {
     throw new Error(
         `Unknown EVAL_SUITE '${requestedSuite}'. Expected one of: all, ${suiteNames.join(", ")}`,
     );

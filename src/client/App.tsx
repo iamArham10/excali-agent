@@ -11,8 +11,8 @@ import { useToolDispatcher } from "./hooks/useToolDispatcher";
 
 const sessionId = crypto.randomUUID();
 const AUTO_APPROVED_CLIENT_TOOLS = new Set([
-    "drawElements",
-    "modifyElements",
+    "createDiagram",
+    "updateDiagram",
     "getCanvasState",
 ]);
 

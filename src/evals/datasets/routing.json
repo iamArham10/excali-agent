@@ -1,118 +1,242 @@
 [
-  {
-    "id": "routing-direct-native-drawing",
-    "suite": "routing",
-    "input": "Draw a rectangle labeled API",
-    "difficulty": "easy",
-    "tags": ["native", "create"],
-    "expected": {
-      "routing": { "requiredTools": ["drawElements"], "forbiddenTools": ["drawDiagramUsingMermaid", "webSearchTool", "knowledgeSearchTool"] }
-    }
-  },
-  {
-    "id": "routing-canvas-inspection",
-    "suite": "routing",
-    "input": "What elements are currently on my canvas?",
-    "difficulty": "easy",
-    "tags": ["state", "read"],
-    "expected": {
-      "routing": { "requiredTools": ["getCanvasState"], "forbiddenTools": ["drawElements", "modifyElements", "deleteElements", "clearCanvas"] }
-    }
-  },
-  {
-    "id": "routing-unknown-state-before-edit",
-    "suite": "routing",
-    "input": "Change the database box to green",
-    "difficulty": "medium",
-    "tags": ["state", "edit"],
-    "expected": {
-      "routing": { "requiredTools": ["getCanvasState"], "forbiddenTools": ["drawElements", "deleteElements", "clearCanvas"] }
-    }
-  },
-  {
-    "id": "routing-clear-canvas",
-    "suite": "routing",
-    "input": "Clear the entire canvas",
-    "difficulty": "easy",
-    "tags": ["destructive", "clear"],
-    "expected": {
-      "routing": { "requiredTools": ["clearCanvas"], "forbiddenTools": ["deleteElements", "drawElements"] }
-    }
-  },
-  {
-    "id": "routing-explicit-mermaid",
-    "suite": "routing",
-    "input": "Use Mermaid to draw a left-to-right flow from Browser to API to Database",
-    "difficulty": "easy",
-    "tags": ["mermaid"],
-    "expected": {
-      "routing": { "requiredTools": ["drawDiagramUsingMermaid"], "forbiddenTools": ["drawElements"] }
-    }
-  },
-  {
-    "id": "routing-known-element-delete",
-    "suite": "routing",
-    "input": "Delete the Cache box",
-    "difficulty": "medium",
-    "tags": ["delete", "state"],
-    "seed": {
-      "priorPrompt": "Draw API and Cache boxes",
-      "priorResponse": "Created the API and Cache boxes.",
-      "elements": [
-        { "id": "api", "type": "rectangle", "x": 0, "y": 0, "width": 200, "height": 80, "label": { "text": "API" } },
-        { "id": "cache", "type": "rectangle", "x": 300, "y": 0, "width": 200, "height": 80, "label": { "text": "Cache" } }
-      ]
+    {
+        "id": "routing-direct-create",
+        "suite": "routing",
+        "input": "Draw a diagram of a browser talking to a single API service",
+        "difficulty": "easy",
+        "tags": ["create"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            }
+        }
     },
-    "expected": {
-      "routing": { "requiredTools": ["deleteElements"], "forbiddenTools": ["drawElements", "modifyElements", "clearCanvas", "getCanvasState"] }
-    }
-  },
-  {
-    "id": "routing-current-information",
-    "suite": "routing",
-    "input": "Search the web for the current stable Kubernetes version before recommending what to label a cluster diagram",
-    "difficulty": "medium",
-    "tags": ["web", "freshness"],
-    "expected": {
-      "routing": { "requiredTools": ["webSearchTool"], "forbiddenTools": ["knowledgeSearchTool", "drawElements", "drawDiagramUsingMermaid"] }
-    }
-  },
-  {
-    "id": "routing-internal-knowledge",
-    "suite": "routing",
-    "input": "Look in the knowledge base for our authentication architecture",
-    "difficulty": "medium",
-    "tags": ["rag"],
-    "expected": {
-      "routing": { "requiredTools": ["knowledgeSearchTool"], "forbiddenTools": ["webSearchTool", "drawElements"] }
-    }
-  },
-  {
-    "id": "routing-non-canvas-question",
-    "suite": "routing",
-    "input": "Briefly explain the difference between horizontal and vertical scaling. Do not draw anything.",
-    "difficulty": "easy",
-    "tags": ["negative", "no-tool"],
-    "expected": {
-      "routing": { "requiredTools": [], "forbiddenTools": ["drawElements", "modifyElements", "deleteElements", "clearCanvas", "drawDiagramUsingMermaid", "webSearchTool", "knowledgeSearchTool", "getCanvasState"] },
-      "response": { "maxWords": 80, "requiredPhrases": [], "forbiddenPhrases": ["created the diagram", "drawn"] }
-    }
-  },
-  {
-    "id": "routing-known-element-modify-not-redraw",
-    "suite": "routing",
-    "input": "Rename Worker to Queue Consumer",
-    "difficulty": "medium",
-    "tags": ["modify", "state"],
-    "seed": {
-      "priorPrompt": "Draw a Worker box",
-      "priorResponse": "Created the Worker box.",
-      "elements": [
-        { "id": "worker", "type": "rectangle", "x": 0, "y": 0, "width": 200, "height": 80, "label": { "text": "Worker" } }
-      ]
+    {
+        "id": "routing-canvas-inspection",
+        "suite": "routing",
+        "input": "What diagrams are currently on my canvas?",
+        "difficulty": "easy",
+        "tags": ["state", "read"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["getCanvasState"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas"
+                ]
+            }
+        }
     },
-    "expected": {
-      "routing": { "requiredTools": ["modifyElements"], "forbiddenTools": ["drawElements", "deleteElements", "getCanvasState"] }
+    {
+        "id": "routing-unknown-state-before-edit",
+        "suite": "routing",
+        "input": "Change the database box to green",
+        "difficulty": "medium",
+        "tags": ["state", "edit"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["getCanvasState"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas"
+                ]
+            }
+        }
+    },
+    {
+        "id": "routing-clear-canvas",
+        "suite": "routing",
+        "input": "Clear the entire canvas",
+        "difficulty": "easy",
+        "tags": ["destructive", "clear"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["clearCanvas"],
+                "forbiddenTools": [
+                    "deleteDiagram",
+                    "createDiagram",
+                    "updateDiagram"
+                ]
+            }
+        }
+    },
+    {
+        "id": "routing-mermaid-request-uses-create",
+        "suite": "routing",
+        "input": "Use Mermaid to draw a left-to-right flow from Browser to API to Database",
+        "difficulty": "medium",
+        "tags": ["create", "legacy-mermaid"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            }
+        }
+    },
+    {
+        "id": "routing-known-node-remove-is-update",
+        "suite": "routing",
+        "input": "Delete the Cache box",
+        "difficulty": "medium",
+        "tags": ["update", "remove-node", "state"],
+        "seed": {
+            "priorPrompt": "Draw an API with a cache",
+            "priorResponse": "I've created the API and cache diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "api-cache",
+                "nodes": [
+                    { "id": "api", "label": "API" },
+                    { "id": "cache", "label": "Cache", "kind": "cache" }
+                ],
+                "edges": [{ "from": "api", "to": "cache" }]
+            }
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["updateDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "getCanvasState"
+                ]
+            }
+        }
+    },
+    {
+        "id": "routing-current-information",
+        "suite": "routing",
+        "input": "Search the web for the current stable Kubernetes version before recommending what to label a cluster diagram",
+        "difficulty": "medium",
+        "tags": ["web", "freshness"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["webSearchTool"],
+                "forbiddenTools": [
+                    "knowledgeSearchTool",
+                    "createDiagram",
+                    "updateDiagram"
+                ]
+            }
+        }
+    },
+    {
+        "id": "routing-internal-knowledge",
+        "suite": "routing",
+        "input": "Look in the knowledge base for our authentication architecture",
+        "difficulty": "medium",
+        "tags": ["rag"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["knowledgeSearchTool"],
+                "forbiddenTools": ["webSearchTool", "createDiagram"]
+            }
+        }
+    },
+    {
+        "id": "routing-non-canvas-question",
+        "suite": "routing",
+        "input": "Briefly explain the difference between horizontal and vertical scaling. Do not draw anything.",
+        "difficulty": "easy",
+        "tags": ["negative", "no-tool"],
+        "expected": {
+            "routing": {
+                "requiredTools": [],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool",
+                    "getCanvasState"
+                ]
+            },
+            "response": {
+                "maxWords": 80,
+                "requiredPhrases": [],
+                "forbiddenPhrases": ["created the diagram", "drawn"]
+            }
+        }
+    },
+    {
+        "id": "routing-known-node-rename-not-recreate",
+        "suite": "routing",
+        "input": "Rename Worker to Queue Consumer",
+        "difficulty": "medium",
+        "tags": ["update", "state"],
+        "seed": {
+            "priorPrompt": "Draw a queue feeding a worker",
+            "priorResponse": "I've created the queue and worker diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "queue-worker",
+                "nodes": [
+                    { "id": "queue", "label": "Queue", "kind": "queue" },
+                    { "id": "worker", "label": "Worker" }
+                ],
+                "edges": [
+                    { "from": "queue", "to": "worker", "style": "dashed" }
+                ]
+            }
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["updateDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "getCanvasState"
+                ]
+            }
+        }
+    },
+    {
+        "id": "routing-user-edited-reads-state",
+        "suite": "routing",
+        "input": "I renamed a couple of boxes by hand. Now add a Redis cache next to the API.",
+        "difficulty": "hard",
+        "tags": ["state", "manual-edits"],
+        "seed": {
+            "priorPrompt": "Draw an API backed by Postgres",
+            "priorResponse": "I've created the API diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "api-db",
+                "nodes": [
+                    { "id": "api", "label": "API" },
+                    { "id": "db", "label": "Postgres", "kind": "database" }
+                ],
+                "edges": [{ "from": "api", "to": "db", "label": "SQL" }]
+            }
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["getCanvasState"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas"
+                ]
+            }
+        }
     }
-  }
 ]

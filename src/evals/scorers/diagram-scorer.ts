@@ -1,11 +1,19 @@
+import { TOOL_NAMES } from "../../shared/tool-names";
 import {
-    getDrawnElements,
-    getLabel,
-    isRecord,
-    normalizeText,
+    describeConnection,
+    describeMatcher,
+    getCalls,
+    getCreatedSpec,
+    getSpecItems,
+    hasConnection,
+    hasItemLabeled,
+    matchesLabel,
+    unmatchedMessages,
 } from "../lib/elements";
-import { clampScore, ratio, type ScoreResult } from "../lib/score";
+import { ratio, type ScoreResult } from "../lib/score";
 import type { EvalScorerArgs } from "../types";
+
+const NAME = "diagram-semantics";
 
 export function diagramScorer({
     output,
@@ -13,114 +21,190 @@ export function diagramScorer({
 }: EvalScorerArgs): ScoreResult {
     const specification = expected.diagram;
     if (!specification) {
-        return {
-            name: "diagram-semantics",
-            score: 1,
-            metadata: { skipped: true },
-        };
+        return { name: NAME, score: 1, metadata: { skipped: true } };
     }
 
-    const elements = getDrawnElements(output);
-    if (elements.length === 0) {
+    const parsed = getCreatedSpec(output);
+    if (!parsed) {
         return {
-            name: "diagram-semantics",
+            name: NAME,
             score: 0,
-            metadata: { issues: ["no elements were drawn"] },
+            metadata: { issues: ["createDiagram was not called"] },
+        };
+    }
+    // A spec that fails the schema or semantic validation is rejected by the
+    // canvas, so nothing would be drawn.
+    if (!parsed.ok || parsed.errors.length > 0) {
+        return {
+            name: NAME,
+            score: 0,
+            metadata: { issues: ["diagram spec is invalid", ...parsed.errors] },
         };
     }
 
-    const nodes = elements.filter((element) =>
-        ["rectangle", "ellipse", "diamond", "text"].includes(
-            String(element.type),
-        ),
-    );
-    const idsToLabels = new Map<string, string>();
-    for (const node of nodes) {
-        if (typeof node.id === "string" && getLabel(node)) {
-            idsToLabels.set(node.id, normalizeText(getLabel(node)!));
-        }
-    }
-
-    const nodeScores: number[] = [];
+    const { spec, warnings } = parsed;
+    const checks: boolean[] = [];
     const issues: string[] = [];
-    for (const expectedNode of specification.nodes) {
-        const count = nodes.filter(
-            (node) =>
-                node.type === expectedNode.type &&
-                getLabel(node) !== undefined &&
-                normalizeText(getLabel(node)!) ===
-                    normalizeText(expectedNode.label),
-        ).length;
-        nodeScores.push(Math.min(1, count / expectedNode.count));
-        if (count < expectedNode.count) {
-            issues.push(
-                `expected ${expectedNode.count} ${expectedNode.type} node(s) labeled '${expectedNode.label}', found ${count}`,
-            );
-        }
+    const check = (passed: boolean, issue: string) => {
+        checks.push(passed);
+        if (!passed) issues.push(issue);
+    };
+
+    const createCalls = getCalls(output, TOOL_NAMES.CREATE_DIAGRAM).length;
+    const destructive = output.toolCalls.filter((call) =>
+        [
+            TOOL_NAMES.DELETE_DIAGRAM,
+            TOOL_NAMES.CLEAR_CANVAS,
+            TOOL_NAMES.UPDATE_DIAGRAM,
+        ].includes(call.toolName as never),
+    );
+    check(
+        createCalls === 1 && destructive.length === 0,
+        `diagram should be built in a single createDiagram call (got ${createCalls} createDiagram, ${destructive.map((call) => call.toolName).join(", ") || "no"} other mutations)`,
+    );
+
+    check(
+        spec.type === specification.diagramType,
+        `expected a ${specification.diagramType} diagram, got ${spec.type}`,
+    );
+
+    if (specification.direction) {
+        const direction =
+            spec.type === "sequence"
+                ? undefined
+                : (spec.direction ??
+                  (spec.type === "architecture" ? "LR" : "TB"));
+        check(
+            direction === specification.direction,
+            `expected direction ${specification.direction}, got ${direction ?? "none"}`,
+        );
     }
 
-    const connectionScores: number[] = [];
+    const items = getSpecItems(spec);
+    for (const node of specification.nodes) {
+        const matches =
+            spec.type === "sequence"
+                ? []
+                : spec.nodes.filter((candidate) =>
+                      matchesLabel(candidate.label, node.label),
+                  );
+        const passed =
+            matches.length > 0 &&
+            (node.kind === undefined ||
+                matches.some(
+                    (candidate) =>
+                        (candidate.kind ??
+                            (spec.type === "flowchart"
+                                ? "process"
+                                : "service")) === node.kind,
+                ));
+        check(
+            passed,
+            `missing node '${describeMatcher(node.label)}'${node.kind ? ` of kind ${node.kind}` : ""}`,
+        );
+    }
+
     for (const connection of specification.connections) {
-        const count = elements.filter((element) => {
-            if (
-                element.type !== "arrow" ||
-                !isRecord(element.start) ||
-                !isRecord(element.end)
-            ) {
-                return false;
-            }
-            const from =
-                typeof element.start.id === "string"
-                    ? idsToLabels.get(element.start.id)
-                    : undefined;
-            const to =
-                typeof element.end.id === "string"
-                    ? idsToLabels.get(element.end.id)
-                    : undefined;
-            const labelMatches =
-                connection.label === undefined ||
-                (getLabel(element) !== undefined &&
-                    normalizeText(getLabel(element)!) ===
-                        normalizeText(connection.label));
-            return (
-                from === normalizeText(connection.from) &&
-                to === normalizeText(connection.to) &&
-                labelMatches
+        check(
+            hasConnection(spec, connection),
+            `missing connection ${describeConnection(connection)}${connection.style ? ` (${connection.style})` : ""}`,
+        );
+    }
+
+    for (const group of specification.groups) {
+        if (spec.type !== "architecture") {
+            check(
+                false,
+                `expected group '${describeMatcher(group.label)}' but diagram is ${spec.type}`,
             );
-        }).length;
-        connectionScores.push(Math.min(1, count / connection.count));
-        if (count < connection.count) {
-            issues.push(
-                `expected ${connection.count} connection(s) ${connection.from} -> ${connection.to}${connection.label ? ` labeled '${connection.label}'` : ""}, found ${count}`,
+            continue;
+        }
+        const groups = spec.groups ?? [];
+        const byId = new Map(groups.map((g) => [g.id, g]));
+        const candidates = groups.filter((g) =>
+            matchesLabel(g.label, group.label),
+        );
+        check(
+            candidates.length > 0,
+            `missing group '${describeMatcher(group.label)}'`,
+        );
+        if (candidates.length === 0) continue;
+
+        const candidateIds = new Set(candidates.map((g) => g.id));
+        const isInside = (groupId: string | undefined) => {
+            const seen = new Set<string>();
+            while (groupId && !seen.has(groupId)) {
+                if (candidateIds.has(groupId)) return true;
+                seen.add(groupId);
+                groupId = byId.get(groupId)?.parent;
+            }
+            return false;
+        };
+
+        for (const member of group.contains) {
+            check(
+                spec.nodes.some(
+                    (node) =>
+                        matchesLabel(node.label, member) &&
+                        isInside(node.group),
+                ),
+                `group '${describeMatcher(group.label)}' should contain '${describeMatcher(member)}'`,
+            );
+        }
+        if (group.parent !== undefined) {
+            const parentMatcher = group.parent;
+            check(
+                candidates.some((g) => {
+                    const parent = g.parent ? byId.get(g.parent) : undefined;
+                    return (
+                        parent !== undefined &&
+                        matchesLabel(parent.label, parentMatcher)
+                    );
+                }),
+                `group '${describeMatcher(group.label)}' should be nested in '${describeMatcher(parentMatcher)}'`,
             );
         }
     }
 
-    const expectedNodeCount = specification.nodes.reduce(
-        (sum, node) => sum + node.count,
-        0,
-    );
-    const precision = Math.min(
-        1,
-        expectedNodeCount / Math.max(1, nodes.length),
-    );
-    const nodeRecall = ratio(
-        nodeScores.reduce((sum, score) => sum + score, 0),
-        nodeScores.length,
-    );
-    const connectionRecall = ratio(
-        connectionScores.reduce((sum, score) => sum + score, 0),
-        connectionScores.length,
-    );
-    const connectionWeight = specification.connections.length > 0 ? 0.3 : 0;
-    const score =
-        nodeRecall * (0.85 - connectionWeight) +
-        connectionRecall * connectionWeight +
-        precision * 0.15;
+    for (const participant of specification.participants) {
+        check(
+            spec.type === "sequence" && hasItemLabeled(spec, participant),
+            `missing participant '${describeMatcher(participant)}'`,
+        );
+    }
+
+    if (specification.messages.length > 0) {
+        const missing = unmatchedMessages(spec, specification.messages);
+        for (const message of specification.messages) {
+            check(
+                !missing.includes(message),
+                `missing or out-of-order message ${describeConnection(message)}${message.kind ? ` (${message.kind})` : ""}`,
+            );
+        }
+    }
+
+    if (specification.maxNodes !== undefined) {
+        check(
+            items.length <= specification.maxNodes,
+            `diagram has ${items.length} nodes; expected at most ${specification.maxNodes}`,
+        );
+    }
+
+    if (specification.forbidWarnings) {
+        check(
+            warnings.length === 0,
+            `validation warnings: ${warnings.join("; ")}`,
+        );
+    }
 
     return {
-        name: "diagram-semantics",
-        score: clampScore(score),
-        metadata: { nodeRecall, connectionRecall, precision, issues },
+        name: NAME,
+        score: ratio(checks.filter(Boolean).length, checks.length),
+        metadata: {
+            diagramType: spec.type,
+            nodeCount: items.length,
+            warnings,
+            issues,
+        },
     };
 }

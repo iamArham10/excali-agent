@@ -1,176 +1,396 @@
 [
     {
-        "id": "creation-labeled-rectangle",
+        "id": "creation-three-tier-web-app",
         "suite": "creation",
-        "input": "Create a rectangle labeled Client",
+        "input": "Draw a simple 3-tier architecture: a React web client calls a Node.js API over HTTPS, and the API stores data in PostgreSQL.",
         "difficulty": "easy",
-        "tags": ["shape", "label"],
+        "tags": ["architecture", "edge-label"],
         "expected": {
             "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
             },
             "diagram": {
-                "nodes": [{ "label": "Client", "type": "rectangle" }],
-                "connections": []
-            }
-        }
-    },
-    {
-        "id": "creation-standalone-title",
-        "suite": "creation",
-        "input": "Add a standalone title that says Payment Architecture",
-        "difficulty": "easy",
-        "tags": ["text"],
-        "expected": {
-            "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
-            },
-            "diagram": {
-                "nodes": [{ "label": "Payment Architecture", "type": "text" }],
-                "connections": [],
-                "requireLabels": false
-            }
-        }
-    },
-    {
-        "id": "creation-three-stage-flow",
-        "suite": "creation",
-        "input": "Draw three rectangles labeled Input, Process, and Output from left to right, with arrows Input to Process and Process to Output",
-        "difficulty": "medium",
-        "tags": ["flow", "bindings"],
-        "expected": {
-            "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
-            },
-            "diagram": {
+                "diagramType": "architecture",
                 "nodes": [
-                    { "label": "Input", "type": "rectangle" },
-                    { "label": "Process", "type": "rectangle" },
-                    { "label": "Output", "type": "rectangle" }
+                    { "label": ["React", "Web Client", "Frontend"] },
+                    { "label": ["API", "Node"], "kind": "service" },
+                    { "label": ["Postgres"], "kind": "database" }
                 ],
                 "connections": [
-                    { "from": "Input", "to": "Process" },
-                    { "from": "Process", "to": "Output" }
-                ]
-            }
-        }
-    },
-    {
-        "id": "creation-decision-branches",
-        "suite": "creation",
-        "input": "Create a flowchart with an ellipse Start leading to a diamond Valid?, then arrows from Valid? to rectangles Accept and Reject",
-        "difficulty": "medium",
-        "tags": ["decision", "mixed-shapes"],
-        "expected": {
-            "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
-            },
-            "diagram": {
-                "nodes": [
-                    { "label": "Start", "type": "ellipse" },
-                    { "label": "Valid?", "type": "diamond" },
-                    { "label": "Accept", "type": "rectangle" },
-                    { "label": "Reject", "type": "rectangle" }
+                    {
+                        "from": ["React", "Web Client", "Frontend"],
+                        "to": ["API", "Node"],
+                        "label": "HTTPS"
+                    },
+                    { "from": ["API", "Node"], "to": ["Postgres"] }
                 ],
-                "connections": [
-                    { "from": "Start", "to": "Valid?" },
-                    { "from": "Valid?", "to": "Accept" },
-                    { "from": "Valid?", "to": "Reject" }
-                ]
+                "maxNodes": 5
             }
         }
     },
     {
-        "id": "creation-bidirectional-link",
+        "id": "creation-aws-vpc-nested-groups",
         "suite": "creation",
-        "input": "Draw Client and Server rectangles with separate arrows in both directions",
+        "input": "Draw an AWS architecture: users reach an Application Load Balancer in a public subnet, which routes to two EC2 app servers in a private subnet. The app servers use an RDS database, also in the private subnet. Both subnets are inside a VPC.",
         "difficulty": "hard",
-        "tags": ["bidirectional", "geometry"],
+        "tags": ["architecture", "groups", "nesting"],
         "expected": {
             "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "knowledgeSearchTool"
+                ]
             },
             "diagram": {
+                "diagramType": "architecture",
                 "nodes": [
-                    { "label": "Client", "type": "rectangle" },
-                    { "label": "Server", "type": "rectangle" }
+                    { "label": ["User"] },
+                    { "label": ["Load Balancer", "ALB"] },
+                    { "label": ["App Server", "EC2"] },
+                    { "label": ["RDS"], "kind": "database" }
                 ],
                 "connections": [
-                    { "from": "Client", "to": "Server" },
-                    { "from": "Server", "to": "Client" }
-                ]
+                    { "from": ["User"], "to": ["Load Balancer", "ALB"] },
+                    {
+                        "from": ["Load Balancer", "ALB"],
+                        "to": ["App Server", "EC2"]
+                    },
+                    { "from": ["App Server", "EC2"], "to": ["RDS"] }
+                ],
+                "groups": [
+                    {
+                        "label": "VPC",
+                        "contains": [
+                            ["Load Balancer", "ALB"],
+                            ["App Server", "EC2"],
+                            ["RDS"]
+                        ]
+                    },
+                    {
+                        "label": "Public",
+                        "parent": "VPC",
+                        "contains": [["Load Balancer", "ALB"]]
+                    },
+                    {
+                        "label": "Private",
+                        "parent": "VPC",
+                        "contains": [["App Server", "EC2"], ["RDS"]]
+                    }
+                ],
+                "maxNodes": 7
             }
         }
     },
     {
-        "id": "creation-fan-out",
+        "id": "creation-event-driven-orders",
         "suite": "creation",
-        "input": "Draw an API Gateway rectangle above three rectangles labeled Users, Orders, and Billing. Connect the gateway to each service.",
-        "difficulty": "hard",
-        "tags": ["fan-out", "layout"],
-        "expected": {
-            "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
-            },
-            "diagram": {
-                "nodes": [
-                    { "label": "API Gateway", "type": "rectangle" },
-                    { "label": "Users", "type": "rectangle" },
-                    { "label": "Orders", "type": "rectangle" },
-                    { "label": "Billing", "type": "rectangle" }
-                ],
-                "connections": [
-                    { "from": "API Gateway", "to": "Users" },
-                    { "from": "API Gateway", "to": "Orders" },
-                    { "from": "API Gateway", "to": "Billing" }
-                ]
-            }
-        }
-    },
-    {
-        "id": "creation-labeled-edge",
-        "suite": "creation",
-        "input": "Draw a Browser rectangle connected to an API rectangle by an arrow labeled HTTPS",
+        "input": "Draw an event-driven order system: the Order Service publishes OrderPlaced events to a Kafka topic, and the events flow from Kafka to the Inventory Service and the Email Service. Show the asynchronous event flow with dashed arrows.",
         "difficulty": "medium",
-        "tags": ["arrow-label"],
+        "tags": ["architecture", "queue", "async"],
         "expected": {
             "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
             },
             "diagram": {
+                "diagramType": "architecture",
                 "nodes": [
-                    { "label": "Browser", "type": "rectangle" },
-                    { "label": "API", "type": "rectangle" }
+                    { "label": "Order Service" },
+                    { "label": "Kafka", "kind": "queue" },
+                    { "label": "Inventory" },
+                    { "label": "Email" }
                 ],
                 "connections": [
-                    { "from": "Browser", "to": "API", "label": "HTTPS" }
-                ]
+                    {
+                        "from": "Order Service",
+                        "to": "Kafka",
+                        "style": "dashed"
+                    },
+                    { "from": "Kafka", "to": "Inventory", "style": "dashed" },
+                    { "from": "Kafka", "to": "Email", "style": "dashed" }
+                ],
+                "maxNodes": 6
             }
         }
     },
     {
-        "id": "creation-distinct-duplicate-labels",
+        "id": "creation-gateway-fan-out",
         "suite": "creation",
-        "input": "Draw two separate rectangles both labeled Worker, side by side",
-        "difficulty": "hard",
-        "tags": ["duplicate-label", "unique-id"],
+        "input": "Draw an architecture where a mobile client calls an API Gateway, which routes to Users, Orders, and Billing services. Each service has its own database.",
+        "difficulty": "medium",
+        "tags": ["architecture", "fan-out", "kinds"],
         "expected": {
             "routing": {
-                "requiredTools": ["drawElements"],
-                "forbiddenTools": ["drawDiagramUsingMermaid"]
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
             },
             "diagram": {
+                "diagramType": "architecture",
                 "nodes": [
-                    { "label": "Worker", "type": "rectangle", "count": 2 }
+                    { "label": "Mobile", "kind": "client" },
+                    { "label": "Gateway", "kind": "gateway" },
+                    { "label": "Users", "kind": "service" },
+                    { "label": "Orders", "kind": "service" },
+                    { "label": "Billing", "kind": "service" },
+                    { "label": "Users", "kind": "database" },
+                    { "label": "Orders", "kind": "database" },
+                    { "label": "Billing", "kind": "database" }
                 ],
-                "connections": []
+                "connections": [
+                    { "from": "Mobile", "to": "Gateway" },
+                    { "from": "Gateway", "to": "Users" },
+                    { "from": "Gateway", "to": "Orders" },
+                    { "from": "Gateway", "to": "Billing" }
+                ],
+                "maxNodes": 9
+            }
+        }
+    },
+    {
+        "id": "creation-flowchart-login-retry",
+        "suite": "creation",
+        "input": "Make a flowchart of a login attempt: start, the user enters credentials, then check whether the credentials are valid. If yes, show the dashboard and end. If no, increment the failed-attempts counter and check whether attempts are below 3: if yes, loop back to entering credentials; otherwise lock the account and end.",
+        "difficulty": "hard",
+        "tags": ["flowchart", "decision", "loop", "edge-label"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "flowchart",
+                "direction": "TB",
+                "nodes": [
+                    { "label": "Start", "kind": "start" },
+                    { "label": ["Enter", "Credentials"] },
+                    { "label": "Valid", "kind": "decision" },
+                    { "label": "Dashboard" },
+                    { "label": ["Increment", "Failed"] },
+                    {
+                        "label": ["Attempts", "< 3", "below 3"],
+                        "kind": "decision"
+                    },
+                    { "label": "Lock" },
+                    { "label": "End", "kind": "end" }
+                ],
+                "connections": [
+                    { "from": "Start", "to": ["Enter", "Credentials"] },
+                    {
+                        "from": "Valid",
+                        "to": "Dashboard",
+                        "label": ["yes", "true"]
+                    },
+                    {
+                        "from": "Valid",
+                        "to": ["Increment", "Failed"],
+                        "label": ["no", "false", "invalid"]
+                    },
+                    {
+                        "from": ["Attempts", "< 3", "below 3"],
+                        "to": "Enter",
+                        "label": ["yes", "true", "retry"]
+                    },
+                    {
+                        "from": ["Attempts", "< 3", "below 3"],
+                        "to": "Lock",
+                        "label": ["no", "false"]
+                    }
+                ],
+                "maxNodes": 10
+            }
+        }
+    },
+    {
+        "id": "creation-sequence-login",
+        "suite": "creation",
+        "input": "Draw a sequence diagram of a user logging in: the User submits credentials to the Web App, the Web App calls the Auth Service, the Auth Service queries Postgres, Postgres returns the user record, the Auth Service returns a JWT to the Web App, and the Web App shows the dashboard to the User.",
+        "difficulty": "medium",
+        "tags": ["sequence", "reply"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "sequence",
+                "participants": ["User", "Web App", "Auth", "Postgres"],
+                "messages": [
+                    { "from": "User", "to": "Web App" },
+                    { "from": "Web App", "to": "Auth" },
+                    { "from": "Auth", "to": "Postgres" },
+                    { "from": "Postgres", "to": "Auth", "kind": "reply" },
+                    {
+                        "from": "Auth",
+                        "to": "Web App",
+                        "label": ["JWT", "token"],
+                        "kind": "reply"
+                    },
+                    { "from": "Web App", "to": "User", "label": "dashboard" }
+                ],
+                "maxNodes": 5
+            }
+        }
+    },
+    {
+        "id": "creation-sequence-self-call-async",
+        "suite": "creation",
+        "input": "Show the sequence for placing an order: the Client sends POST /orders to the Order Service; the Order Service validates the order itself (a self-call), then asynchronously publishes an OrderCreated event to the Message Broker, and replies 201 Created to the Client.",
+        "difficulty": "hard",
+        "tags": ["sequence", "self-call", "async", "reply"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "sequence",
+                "participants": [
+                    "Client",
+                    "Order Service",
+                    ["Broker", "Queue", "Kafka"]
+                ],
+                "messages": [
+                    {
+                        "from": "Client",
+                        "to": "Order Service",
+                        "label": ["POST", "orders"]
+                    },
+                    {
+                        "from": "Order Service",
+                        "to": "Order Service",
+                        "label": "valid"
+                    },
+                    {
+                        "from": "Order Service",
+                        "to": ["Broker", "Queue", "Kafka"],
+                        "label": "OrderCreated",
+                        "kind": "async"
+                    },
+                    {
+                        "from": "Order Service",
+                        "to": "Client",
+                        "label": ["201", "Created"],
+                        "kind": "reply"
+                    }
+                ],
+                "maxNodes": 4
+            }
+        }
+    },
+    {
+        "id": "creation-infer-flowchart-ci",
+        "suite": "creation",
+        "input": "Visualize the steps of a typical CI pipeline: code is pushed, tests run; if the tests fail, notify the developer; if they pass, build the Docker image and deploy to staging.",
+        "difficulty": "medium",
+        "tags": ["flowchart", "type-inference", "decision"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "flowchart",
+                "nodes": [
+                    { "label": "Push" },
+                    { "label": ["pass", "fail", "test"], "kind": "decision" },
+                    { "label": "Notify" },
+                    { "label": "Build" },
+                    { "label": "Deploy" }
+                ],
+                "connections": [
+                    {
+                        "from": ["pass", "fail", "test"],
+                        "to": "Notify",
+                        "label": ["fail", "no", "false"]
+                    },
+                    {
+                        "from": ["pass", "fail", "test"],
+                        "to": "Build",
+                        "label": ["pass", "yes", "success", "true"]
+                    },
+                    { "from": "Build", "to": "Deploy" }
+                ],
+                "maxNodes": 9
+            }
+        }
+    },
+    {
+        "id": "creation-infer-sequence-payment",
+        "suite": "creation",
+        "input": "Illustrate what happens over time when a customer pays: the Checkout page sends the payment to the Payment Service, which charges Stripe; Stripe responds with success, and the Payment Service confirms back to the Checkout page.",
+        "difficulty": "medium",
+        "tags": ["sequence", "type-inference", "reply"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "sequence",
+                "participants": ["Checkout", "Payment Service", "Stripe"],
+                "messages": [
+                    { "from": "Checkout", "to": "Payment Service" },
+                    { "from": "Payment Service", "to": "Stripe" },
+                    {
+                        "from": "Stripe",
+                        "to": "Payment Service",
+                        "kind": "reply"
+                    },
+                    { "from": "Payment Service", "to": "Checkout" }
+                ],
+                "maxNodes": 5
             }
         }
     }

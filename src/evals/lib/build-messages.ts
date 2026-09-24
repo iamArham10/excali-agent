@@ -1,5 +1,14 @@
 import type { ModelMessage } from "ai";
+import type { DiagramSpec } from "../../shared/schemas/diagram-schema";
+import { TOOL_NAMES } from "../../shared/tool-names";
 import type { EvalCase } from "../types";
+
+function describe(spec: DiagramSpec): string {
+    if (spec.type === "sequence") {
+        return `${spec.participants.length} participants, ${spec.messages.length} messages`;
+    }
+    return `${spec.nodes.length} nodes, ${spec.edges?.length ?? 0} edges`;
+}
 
 export function buildMessages(testCase: EvalCase): ModelMessage[] {
     if (!testCase.seed) {
@@ -7,6 +16,7 @@ export function buildMessages(testCase: EvalCase): ModelMessage[] {
     }
 
     const toolCallId = `seed-${testCase.id}`;
+    const { diagram } = testCase.seed;
 
     return [
         { role: "user", content: testCase.seed.priorPrompt },
@@ -16,8 +26,8 @@ export function buildMessages(testCase: EvalCase): ModelMessage[] {
                 {
                     type: "tool-call",
                     toolCallId,
-                    toolName: "drawElements",
-                    input: { elements: testCase.seed.elements },
+                    toolName: TOOL_NAMES.CREATE_DIAGRAM,
+                    input: { diagram },
                 },
             ],
         },
@@ -27,10 +37,13 @@ export function buildMessages(testCase: EvalCase): ModelMessage[] {
                 {
                     type: "tool-result",
                     toolCallId,
-                    toolName: "drawElements",
+                    toolName: TOOL_NAMES.CREATE_DIAGRAM,
                     output: {
                         type: "json",
-                        value: { created: testCase.seed.elements.length },
+                        value: {
+                            ok: true,
+                            message: `created ${diagram.type} diagram '${diagram.diagramId}' (${describe(diagram)})`,
+                        },
                     },
                 },
             ],

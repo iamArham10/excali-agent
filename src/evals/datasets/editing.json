@@ -1,296 +1,406 @@
 [
     {
-        "id": "editing-rename-shape",
+        "id": "editing-rename-node-keep-id",
         "suite": "editing",
         "input": "Rename Worker to Queue Consumer",
         "difficulty": "easy",
-        "tags": ["modify", "label"],
+        "tags": ["update", "rename", "id-stability"],
         "seed": {
-            "priorPrompt": "Draw a Worker box",
-            "priorResponse": "Created the Worker box.",
-            "elements": [
-                {
-                    "id": "worker",
-                    "type": "rectangle",
-                    "x": 0,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "Worker" }
-                }
-            ]
+            "priorPrompt": "Draw an API that pushes jobs onto a job queue processed by a worker",
+            "priorResponse": "I've created the job processing architecture diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "job-pipeline",
+                "nodes": [
+                    { "id": "api", "label": "API" },
+                    {
+                        "id": "job-queue",
+                        "label": "Job Queue",
+                        "kind": "queue"
+                    },
+                    { "id": "worker", "label": "Worker" }
+                ],
+                "edges": [
+                    { "from": "api", "to": "job-queue", "label": "enqueue" },
+                    {
+                        "from": "job-queue",
+                        "to": "worker",
+                        "label": "consume",
+                        "style": "dashed"
+                    }
+                ]
+            }
         },
         "expected": {
             "routing": {
-                "requiredTools": ["modifyElements"],
+                "requiredTools": ["updateDiagram"],
                 "forbiddenTools": [
-                    "drawElements",
-                    "deleteElements",
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
                     "getCanvasState"
                 ]
             },
             "editing": {
-                "mutations": [
-                    {
-                        "id": "worker",
-                        "type": "rectangle",
-                        "changes": { "label": { "text": "Queue Consumer" } }
-                    }
+                "changedNodes": [{ "id": "worker", "label": "Queue Consumer" }],
+                "nodesAbsent": ["Worker"],
+                "preservedIds": ["api", "job-queue"],
+                "connectionsPresent": [
+                    { "from": "API", "to": "Job Queue" },
+                    { "from": "Job Queue", "to": "Queue Consumer" }
                 ]
             }
         }
     },
     {
-        "id": "editing-style-one-preserve-other",
+        "id": "editing-add-cache-node-and-edge",
         "suite": "editing",
-        "input": "Make only the API box light blue using #a5d8ff",
+        "input": "Add a Redis cache that the API checks before querying Postgres.",
         "difficulty": "medium",
-        "tags": ["modify", "style", "preservation"],
+        "tags": ["update", "add-node", "add-edge", "preservation"],
         "seed": {
-            "priorPrompt": "Draw API and Database boxes",
-            "priorResponse": "Created both boxes.",
-            "elements": [
-                {
-                    "id": "api",
-                    "type": "rectangle",
-                    "x": 0,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "API" }
-                },
-                {
-                    "id": "db",
-                    "type": "ellipse",
-                    "x": 300,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "Database" }
-                }
-            ]
+            "priorPrompt": "Draw a web app that calls an API backed by Postgres",
+            "priorResponse": "I've created the web app architecture diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "web-app",
+                "nodes": [
+                    { "id": "web", "label": "Web App", "kind": "client" },
+                    { "id": "api", "label": "API" },
+                    { "id": "db", "label": "Postgres", "kind": "database" }
+                ],
+                "edges": [
+                    { "from": "web", "to": "api", "label": "HTTPS" },
+                    { "from": "api", "to": "db", "label": "SQL" }
+                ]
+            }
         },
         "expected": {
             "routing": {
-                "requiredTools": ["modifyElements"],
-                "forbiddenTools": ["drawElements", "deleteElements"]
+                "requiredTools": ["updateDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "getCanvasState"
+                ]
             },
             "editing": {
-                "mutations": [
+                "nodesPresent": ["Redis"],
+                "preservedIds": ["web", "api", "db"],
+                "connectionsPresent": [
+                    { "from": "Web App", "to": "API" },
+                    { "from": "API", "to": "Redis" },
+                    { "from": "API", "to": "Postgres" }
+                ]
+            }
+        }
+    },
+    {
+        "id": "editing-remove-node",
+        "suite": "editing",
+        "input": "Remove the cache from the diagram, the API should talk to the database directly.",
+        "difficulty": "medium",
+        "tags": ["update", "remove-node", "dangling-edges"],
+        "seed": {
+            "priorPrompt": "Draw an API that uses a Redis cache in front of a MySQL database",
+            "priorResponse": "I've created the API architecture diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "api-storage",
+                "nodes": [
+                    { "id": "api", "label": "API" },
+                    { "id": "cache", "label": "Redis Cache", "kind": "cache" },
+                    { "id": "db", "label": "MySQL", "kind": "database" }
+                ],
+                "edges": [
+                    { "from": "api", "to": "cache", "label": "get/set" },
+                    { "from": "cache", "to": "db", "label": "miss" }
+                ]
+            }
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["updateDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "getCanvasState"
+                ]
+            },
+            "editing": {
+                "nodesAbsent": ["Cache", "Redis"],
+                "preservedIds": ["api", "db"],
+                "connectionsPresent": [{ "from": "API", "to": "MySQL" }]
+            }
+        }
+    },
+    {
+        "id": "editing-recolor-and-change-kind",
+        "suite": "editing",
+        "input": "Make the Order Service red, and draw the API Gateway with the gateway shape instead of a plain service.",
+        "difficulty": "medium",
+        "tags": ["update", "color", "kind", "preservation"],
+        "seed": {
+            "priorPrompt": "Draw an API gateway in front of an order service with its database",
+            "priorResponse": "I've created the order architecture diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "orders-arch",
+                "nodes": [
+                    { "id": "api-gw", "label": "API Gateway" },
+                    { "id": "orders", "label": "Order Service" },
                     {
-                        "id": "api",
-                        "type": "rectangle",
-                        "changes": { "backgroundColor": "#a5d8ff" }
+                        "id": "orders-db",
+                        "label": "Orders DB",
+                        "kind": "database"
                     }
                 ],
-                "untouchedIds": ["db"]
+                "edges": [
+                    { "from": "api-gw", "to": "orders", "label": "REST" },
+                    { "from": "orders", "to": "orders-db", "label": "SQL" }
+                ]
             }
-        }
-    },
-    {
-        "id": "editing-move-connected-node-reroute",
-        "suite": "editing",
-        "input": "Move the Database to x 600, y 200 and keep its connection to the API correctly attached",
-        "difficulty": "hard",
-        "tags": ["move", "arrow", "geometry"],
-        "seed": {
-            "priorPrompt": "Draw API connected to Database",
-            "priorResponse": "Created the connected boxes.",
-            "elements": [
-                {
-                    "id": "api",
-                    "type": "rectangle",
-                    "x": 0,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "API" }
-                },
-                {
-                    "id": "db",
-                    "type": "ellipse",
-                    "x": 400,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "Database" }
-                },
-                {
-                    "id": "api-db",
-                    "type": "arrow",
-                    "x": 200,
-                    "y": 40,
-                    "points": [
-                        [0, 0],
-                        [200, 0]
-                    ],
-                    "startArrowhead": null,
-                    "endArrowhead": "arrow",
-                    "start": { "id": "api" },
-                    "end": { "id": "db" }
-                }
-            ]
         },
         "expected": {
             "routing": {
-                "requiredTools": ["modifyElements"],
-                "forbiddenTools": ["drawElements", "deleteElements"]
+                "requiredTools": ["updateDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "getCanvasState"
+                ]
             },
             "editing": {
-                "mutations": [
+                "changedNodes": [
                     {
-                        "id": "db",
-                        "type": "ellipse",
-                        "changes": { "x": 600, "y": 200 }
+                        "id": "orders",
+                        "label": "Order Service",
+                        "color": "red"
                     },
-                    { "id": "api-db", "type": "arrow", "changes": {} }
+                    {
+                        "id": "api-gw",
+                        "label": "API Gateway",
+                        "kind": "gateway"
+                    }
                 ],
-                "untouchedIds": ["api"]
+                "preservedIds": ["api-gw", "orders", "orders-db"],
+                "connectionsPresent": [
+                    { "from": "API Gateway", "to": "Order Service" },
+                    { "from": "Order Service", "to": "Orders DB" }
+                ]
             }
         }
     },
     {
-        "id": "editing-delete-shape-cascade",
+        "id": "editing-tidy-up-relayout",
         "suite": "editing",
-        "input": "Delete the Database",
+        "input": "The layout of that flowchart got messy after I moved things around. Can you tidy it up?",
         "difficulty": "medium",
-        "tags": ["delete", "cascade"],
+        "tags": ["update", "relayout"],
         "seed": {
-            "priorPrompt": "Draw API connected to Database",
-            "priorResponse": "Created the connected boxes.",
-            "elements": [
-                {
-                    "id": "api",
-                    "type": "rectangle",
-                    "x": 0,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "API" }
-                },
-                {
-                    "id": "db",
-                    "type": "ellipse",
-                    "x": 400,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "Database" }
-                },
-                {
-                    "id": "api-db",
-                    "type": "arrow",
-                    "x": 200,
-                    "y": 40,
-                    "points": [
-                        [0, 0],
-                        [200, 0]
-                    ],
-                    "startArrowhead": null,
-                    "endArrowhead": "arrow",
-                    "start": { "id": "api" },
-                    "end": { "id": "db" }
-                }
-            ]
+            "priorPrompt": "Make a flowchart for validating a signup form",
+            "priorResponse": "I've created the signup validation flowchart.",
+            "diagram": {
+                "type": "flowchart",
+                "diagramId": "signup-flow",
+                "nodes": [
+                    { "id": "start", "label": "Start", "kind": "start" },
+                    { "id": "submit", "label": "Submit Form", "kind": "io" },
+                    { "id": "valid", "label": "Valid?", "kind": "decision" },
+                    { "id": "create", "label": "Create Account" },
+                    { "id": "error", "label": "Show Errors" },
+                    { "id": "end", "label": "End", "kind": "end" }
+                ],
+                "edges": [
+                    { "from": "start", "to": "submit" },
+                    { "from": "submit", "to": "valid" },
+                    { "from": "valid", "to": "create", "label": "yes" },
+                    { "from": "valid", "to": "error", "label": "no" },
+                    { "from": "error", "to": "submit", "label": "retry" },
+                    { "from": "create", "to": "end" }
+                ]
+            }
         },
         "expected": {
             "routing": {
-                "requiredTools": ["deleteElements"],
+                "requiredTools": ["updateDiagram"],
                 "forbiddenTools": [
-                    "drawElements",
-                    "modifyElements",
+                    "createDiagram",
+                    "deleteDiagram",
                     "clearCanvas"
                 ]
             },
             "editing": {
-                "deletedIds": ["db"],
-                "untouchedIds": ["api", "api-db"]
-            }
-        }
-    },
-    {
-        "id": "editing-clear-all-not-individual-delete",
-        "suite": "editing",
-        "input": "Remove everything from the canvas",
-        "difficulty": "easy",
-        "tags": ["clear", "destructive"],
-        "expected": {
-            "routing": {
-                "requiredTools": ["clearCanvas"],
-                "forbiddenTools": ["deleteElements", "drawElements"]
-            },
-            "editing": { "clearCanvas": true }
-        }
-    },
-    {
-        "id": "editing-batch-style-update",
-        "suite": "editing",
-        "input": "Give both Service A and Service B a solid #b2f2bb background",
-        "difficulty": "medium",
-        "tags": ["batch", "style"],
-        "seed": {
-            "priorPrompt": "Draw Service A and Service B",
-            "priorResponse": "Created both services.",
-            "elements": [
-                {
-                    "id": "service-a",
-                    "type": "rectangle",
-                    "x": 0,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "Service A" }
-                },
-                {
-                    "id": "service-b",
-                    "type": "rectangle",
-                    "x": 300,
-                    "y": 0,
-                    "width": 200,
-                    "height": 80,
-                    "label": { "text": "Service B" }
-                }
-            ]
-        },
-        "expected": {
-            "routing": {
-                "requiredTools": ["modifyElements"],
-                "forbiddenTools": ["drawElements", "deleteElements"]
-            },
-            "editing": {
-                "mutations": [
+                "relayout": true,
+                "preservedIds": [
+                    "start",
+                    "submit",
+                    "valid",
+                    "create",
+                    "error",
+                    "end"
+                ],
+                "connectionsPresent": [
                     {
-                        "id": "service-a",
-                        "type": "rectangle",
-                        "changes": {
-                            "backgroundColor": "#b2f2bb",
-                            "fillStyle": "solid"
-                        }
+                        "from": "Valid?",
+                        "to": "Create Account",
+                        "label": "yes"
                     },
-                    {
-                        "id": "service-b",
-                        "type": "rectangle",
-                        "changes": {
-                            "backgroundColor": "#b2f2bb",
-                            "fillStyle": "solid"
-                        }
-                    }
+                    { "from": "Valid?", "to": "Show Errors", "label": "no" },
+                    { "from": "Show Errors", "to": "Submit Form" }
                 ]
             }
         }
     },
     {
-        "id": "editing-read-before-ambiguous-edit",
+        "id": "editing-delete-diagram",
         "suite": "editing",
-        "input": "Move the login service below the gateway",
-        "difficulty": "hard",
-        "tags": ["unknown-state", "read-first"],
+        "input": "Delete that sequence diagram.",
+        "difficulty": "easy",
+        "tags": ["delete"],
+        "seed": {
+            "priorPrompt": "Draw a sequence diagram of a browser fetching a page from a server",
+            "priorResponse": "I've created the page fetch sequence diagram.",
+            "diagram": {
+                "type": "sequence",
+                "diagramId": "page-fetch",
+                "participants": [
+                    { "id": "browser", "label": "Browser", "kind": "actor" },
+                    { "id": "server", "label": "Web Server" }
+                ],
+                "messages": [
+                    {
+                        "from": "browser",
+                        "to": "server",
+                        "label": "GET /index.html"
+                    },
+                    {
+                        "from": "server",
+                        "to": "browser",
+                        "label": "200 OK",
+                        "kind": "reply"
+                    }
+                ]
+            }
+        },
         "expected": {
             "routing": {
-                "requiredTools": ["getCanvasState"],
-                "forbiddenTools": ["drawElements", "deleteElements"]
+                "requiredTools": ["deleteDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "updateDiagram",
+                    "clearCanvas"
+                ]
             },
-            "editing": { "readCanvasFirst": true }
+            "editing": { "action": "delete" }
+        }
+    },
+    {
+        "id": "editing-clear-canvas",
+        "suite": "editing",
+        "input": "Remove everything from the canvas, I want to start over.",
+        "difficulty": "easy",
+        "tags": ["clear", "destructive"],
+        "seed": {
+            "priorPrompt": "Draw a client calling a server",
+            "priorResponse": "I've created the client-server diagram.",
+            "diagram": {
+                "type": "architecture",
+                "diagramId": "client-server",
+                "nodes": [
+                    { "id": "client", "label": "Client", "kind": "client" },
+                    { "id": "server", "label": "Server" }
+                ],
+                "edges": [{ "from": "client", "to": "server", "label": "HTTP" }]
+            }
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["clearCanvas"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "updateDiagram",
+                    "deleteDiagram"
+                ]
+            },
+            "editing": { "action": "clear" }
+        }
+    },
+    {
+        "id": "editing-sequence-add-message",
+        "suite": "editing",
+        "input": "After the Auth Service returns the JWT, have the Web App also send an async 'login succeeded' event to a new Analytics service.",
+        "difficulty": "hard",
+        "tags": ["update", "sequence", "add-participant", "ordering"],
+        "seed": {
+            "priorPrompt": "Draw a sequence diagram of a user logging in through a web app and an auth service",
+            "priorResponse": "I've created the login sequence diagram.",
+            "diagram": {
+                "type": "sequence",
+                "diagramId": "login-sequence",
+                "participants": [
+                    { "id": "user", "label": "User", "kind": "actor" },
+                    { "id": "web", "label": "Web App" },
+                    { "id": "auth", "label": "Auth Service" },
+                    { "id": "db", "label": "Postgres", "kind": "database" }
+                ],
+                "messages": [
+                    {
+                        "from": "user",
+                        "to": "web",
+                        "label": "submit credentials"
+                    },
+                    { "from": "web", "to": "auth", "label": "POST /login" },
+                    { "from": "auth", "to": "db", "label": "find user" },
+                    {
+                        "from": "db",
+                        "to": "auth",
+                        "label": "user record",
+                        "kind": "reply"
+                    },
+                    {
+                        "from": "auth",
+                        "to": "web",
+                        "label": "JWT",
+                        "kind": "reply"
+                    },
+                    {
+                        "from": "web",
+                        "to": "user",
+                        "label": "show dashboard",
+                        "kind": "reply"
+                    }
+                ]
+            }
+        },
+        "expected": {
+            "routing": {
+                "requiredTools": ["updateDiagram"],
+                "forbiddenTools": [
+                    "createDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "getCanvasState"
+                ]
+            },
+            "editing": {
+                "nodesPresent": ["Analytics"],
+                "preservedIds": ["user", "web", "auth", "db"],
+                "messages": [
+                    { "from": "User", "to": "Web App", "label": "credentials" },
+                    { "from": "Auth Service", "to": "Postgres" },
+                    { "from": "Auth Service", "to": "Web App", "label": "JWT" },
+                    {
+                        "from": "Web App",
+                        "to": "Analytics",
+                        "label": ["login", "succeeded"],
+                        "kind": "async"
+                    }
+                ]
+            }
         }
     }
 ]

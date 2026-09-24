@@ -94,5 +94,5 @@ Open your browser and go to `http://localhost:5173` to interact with the agent.
 - `npm run preview`: Preview the production build locally.
 - `npm run deploy`: Deploy the application to Cloudflare Workers.
 - `npm test`: Validate all eval datasets and smoke-test scorers locally (no API keys required).
-- `npm run eval`: Run all live Braintrust model eval suites. Set `EVAL_SUITE=routing|creation|editing|mermaid|research` to run one suite.
+- `npm run eval`: Run all live Braintrust model eval suites. Set `EVAL_SUITE=routing|creation|editing|research` to run one suite.
 - `npm run ingest -- <folder-path>`: Ingest documentation/files into the Upstash Vector knowledge base.

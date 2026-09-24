@@ -1,56 +1,87 @@
 [
-  {
-    "id": "research-web-current-version",
-    "suite": "research",
-    "input": "Search the web for the current stable React version",
-    "difficulty": "easy",
-    "tags": ["web", "freshness"],
-    "expected": {
-      "routing": { "requiredTools": ["webSearchTool"], "forbiddenTools": ["knowledgeSearchTool", "drawElements"] },
-      "research": { "queryIncludes": ["React", "stable", "version"], "resultLimit": { "min": 1, "max": 10 } }
+    {
+        "id": "research-web-current-version",
+        "suite": "research",
+        "input": "Search the web for the current stable React version",
+        "difficulty": "easy",
+        "tags": ["web", "freshness"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["webSearchTool"],
+                "forbiddenTools": ["knowledgeSearchTool", "createDiagram"]
+            },
+            "research": {
+                "queryIncludes": ["React", "stable", "version"],
+                "resultLimit": { "min": 1, "max": 10 }
+            }
+        }
+    },
+    {
+        "id": "research-web-ground-before-diagram",
+        "suite": "research",
+        "input": "Search for the latest official Kubernetes control-plane components before drawing anything",
+        "difficulty": "medium",
+        "tags": ["web", "grounding"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["webSearchTool"],
+                "forbiddenTools": [
+                    "knowledgeSearchTool",
+                    "createDiagram",
+                    "updateDiagram"
+                ]
+            },
+            "research": {
+                "queryIncludes": ["Kubernetes", "control-plane", "components"],
+                "resultLimit": { "min": 2, "max": 10 }
+            }
+        }
+    },
+    {
+        "id": "research-knowledge-authentication",
+        "suite": "research",
+        "input": "Search our knowledge base for the authentication service architecture",
+        "difficulty": "easy",
+        "tags": ["knowledge", "rag"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["knowledgeSearchTool"],
+                "forbiddenTools": ["webSearchTool", "createDiagram"]
+            },
+            "research": {
+                "queryIncludes": ["authentication", "architecture"],
+                "resultLimit": { "min": 1, "max": 10 }
+            }
+        }
+    },
+    {
+        "id": "research-knowledge-specific-component",
+        "suite": "research",
+        "input": "Use internal knowledge search to find how our notification worker handles retries",
+        "difficulty": "medium",
+        "tags": ["knowledge", "specificity"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["knowledgeSearchTool"],
+                "forbiddenTools": ["webSearchTool", "createDiagram"]
+            },
+            "research": {
+                "queryIncludes": ["notification", "worker", "retries"],
+                "resultLimit": { "min": 1, "max": 10 }
+            }
+        }
+    },
+    {
+        "id": "research-no-unneeded-search",
+        "suite": "research",
+        "input": "Draw a diagram with a single Static Website node",
+        "difficulty": "medium",
+        "tags": ["negative", "no-research"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": ["webSearchTool", "knowledgeSearchTool"]
+            }
+        }
     }
-  },
-  {
-    "id": "research-web-ground-before-diagram",
-    "suite": "research",
-    "input": "Search for the latest official Kubernetes control-plane components before drawing anything",
-    "difficulty": "medium",
-    "tags": ["web", "grounding"],
-    "expected": {
-      "routing": { "requiredTools": ["webSearchTool"], "forbiddenTools": ["knowledgeSearchTool", "drawElements", "drawDiagramUsingMermaid"] },
-      "research": { "queryIncludes": ["Kubernetes", "control-plane", "components"], "resultLimit": { "min": 2, "max": 10 } }
-    }
-  },
-  {
-    "id": "research-knowledge-authentication",
-    "suite": "research",
-    "input": "Search our knowledge base for the authentication service architecture",
-    "difficulty": "easy",
-    "tags": ["knowledge", "rag"],
-    "expected": {
-      "routing": { "requiredTools": ["knowledgeSearchTool"], "forbiddenTools": ["webSearchTool", "drawElements"] },
-      "research": { "queryIncludes": ["authentication", "architecture"], "resultLimit": { "min": 1, "max": 10 } }
-    }
-  },
-  {
-    "id": "research-knowledge-specific-component",
-    "suite": "research",
-    "input": "Use internal knowledge search to find how our notification worker handles retries",
-    "difficulty": "medium",
-    "tags": ["knowledge", "specificity"],
-    "expected": {
-      "routing": { "requiredTools": ["knowledgeSearchTool"], "forbiddenTools": ["webSearchTool", "drawElements"] },
-      "research": { "queryIncludes": ["notification", "worker", "retries"], "resultLimit": { "min": 1, "max": 10 } }
-    }
-  },
-  {
-    "id": "research-no-unneeded-search",
-    "suite": "research",
-    "input": "Draw a rectangle labeled Static Website",
-    "difficulty": "medium",
-    "tags": ["negative", "no-research"],
-    "expected": {
-      "routing": { "requiredTools": ["drawElements"], "forbiddenTools": ["webSearchTool", "knowledgeSearchTool", "drawDiagramUsingMermaid"] }
-    }
-  }
 ]
