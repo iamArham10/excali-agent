@@ -109,7 +109,9 @@ function titleSkeleton(spec: DiagramSpec, bounds: Box): Skeleton[] {
             strokeColor: INK,
             ...clean,
             customData: {
-                [META_KEY]: meta(spec, "title", "title", 0, { text: spec.title }),
+                [META_KEY]: meta(spec, "title", "title", 0, {
+                    text: spec.title,
+                }),
             },
         },
     ];
@@ -138,17 +140,35 @@ function facingPoints(a: Box, b: Box, direction: "LR" | "TB"): [Point, Point] {
     const hGap = Math.max(b.x - (a.x + a.width), a.x - (b.x + b.width));
     const vGap = Math.max(b.y - (a.y + a.height), a.y - (b.y + b.height));
     const horizontal =
-        hGap > 0 && vGap > 0 ? hGap >= vGap : hGap > 0 ? true : vGap > 0 ? false : direction === "LR";
+        hGap > 0 && vGap > 0
+            ? hGap >= vGap
+            : hGap > 0
+              ? true
+              : vGap > 0
+                ? false
+                : direction === "LR";
     const [acx, acy] = [a.x + a.width / 2, a.y + a.height / 2];
     const [bcx, bcy] = [b.x + b.width / 2, b.y + b.height / 2];
     if (horizontal) {
         return bcx >= acx
-            ? [[a.x + a.width, acy], [b.x, bcy]]
-            : [[a.x, acy], [b.x + b.width, bcy]];
+            ? [
+                  [a.x + a.width, acy],
+                  [b.x, bcy],
+              ]
+            : [
+                  [a.x, acy],
+                  [b.x + b.width, bcy],
+              ];
     }
     return bcy >= acy
-        ? [[acx, a.y + a.height], [bcx, b.y]]
-        : [[acx, a.y], [bcx, b.y + b.height]];
+        ? [
+              [acx, a.y + a.height],
+              [bcx, b.y],
+          ]
+        : [
+              [acx, a.y],
+              [bcx, b.y + b.height],
+          ];
 }
 
 export function renderGraph(
@@ -160,7 +180,8 @@ export function renderGraph(
     } = {},
 ): RenderResult {
     const { diagramId } = spec;
-    const direction = spec.direction ?? (spec.type === "architecture" ? "LR" : "TB");
+    const direction =
+        spec.direction ?? (spec.type === "architecture" ? "LR" : "TB");
     const skeletons: Skeleton[] = [];
     const routeLater: string[] = [];
     const exactPoints: RenderResult["exactPoints"] = new Map();
@@ -182,7 +203,7 @@ export function renderGraph(
                 text: group.label,
                 fontSize: GROUP_FONT_SIZE,
                 fontFamily: FONT_FAMILY_CLEAN,
-                textAlign: "left",
+                textAlign: "center",
                 verticalAlign: "top",
                 strokeColor: "#495057",
             },
@@ -312,7 +333,10 @@ export function renderGraph(
     };
 }
 
-export function renderSequence(spec: SequenceSpec, layout: SequenceLayout): RenderResult {
+export function renderSequence(
+    spec: SequenceSpec,
+    layout: SequenceLayout,
+): RenderResult {
     const { diagramId } = spec;
     const skeletons: Skeleton[] = [];
     const exactPoints: RenderResult["exactPoints"] = new Map();
@@ -337,7 +361,13 @@ export function renderSequence(spec: SequenceSpec, layout: SequenceLayout): Rend
             groupIds,
             ...clean,
             customData: {
-                [META_KEY]: meta(spec, "lifeline", participant.id, participant.order, {}),
+                [META_KEY]: meta(
+                    spec,
+                    "lifeline",
+                    participant.id,
+                    participant.order,
+                    {},
+                ),
             },
         });
         skeletons.push({
@@ -359,11 +389,17 @@ export function renderSequence(spec: SequenceSpec, layout: SequenceLayout): Rend
                 strokeColor: INK,
             },
             customData: {
-                [META_KEY]: meta(spec, "participant", participant.id, participant.order, {
-                    label: participant.label,
-                    kind: participant.kind,
-                    color: participant.color,
-                }),
+                [META_KEY]: meta(
+                    spec,
+                    "participant",
+                    participant.id,
+                    participant.order,
+                    {
+                        label: participant.label,
+                        kind: participant.kind,
+                        color: participant.color,
+                    },
+                ),
             },
         });
     }
@@ -372,7 +408,10 @@ export function renderSequence(spec: SequenceSpec, layout: SequenceLayout): Rend
         const key = String(message.index);
         const id = elementId(diagramId, "message", key);
         const [x, y] = message.points[0];
-        const points = message.points.map(([px, py]): Point => [px - x, py - y]);
+        const points = message.points.map(([px, py]): Point => [
+            px - x,
+            py - y,
+        ]);
         const groupIds = [`${diagramId}:msg:${key}`];
         exactPoints.set(id, { x, y, points });
         skeletons.push({
@@ -386,7 +425,8 @@ export function renderSequence(spec: SequenceSpec, layout: SequenceLayout): Rend
             strokeWidth: 2,
             strokeStyle: message.kind === "reply" ? "dashed" : "solid",
             startArrowhead: null,
-            endArrowhead: message.kind === "sync" || !message.kind ? "triangle" : "arrow",
+            endArrowhead:
+                message.kind === "sync" || !message.kind ? "triangle" : "arrow",
             groupIds,
             ...clean,
             customData: {
@@ -463,16 +503,23 @@ export function readDiagrams(sceneElements: readonly ExcalidrawElement[]) {
     const boundText = new Map<string, string>();
     for (const element of alive) {
         if (element.type === "text" && element.containerId) {
-            boundText.set(element.containerId, (element as ExcalidrawTextElement).originalText);
+            boundText.set(
+                element.containerId,
+                (element as ExcalidrawTextElement).originalText,
+            );
         }
     }
 
-    const grouped = new Map<string, { meta: DiagramMeta; element: ExcalidrawElement }[]>();
+    const grouped = new Map<
+        string,
+        { meta: DiagramMeta; element: ExcalidrawElement }[]
+    >();
     let otherElements = 0;
     for (const element of alive) {
         const elementMeta = getMeta(element);
         if (!elementMeta) {
-            if (!(element.type === "text" && element.containerId)) otherElements++;
+            if (!(element.type === "text" && element.containerId))
+                otherElements++;
             continue;
         }
         const list = grouped.get(elementMeta.diagramId) ?? [];
@@ -487,8 +534,12 @@ export function readDiagrams(sceneElements: readonly ExcalidrawElement[]) {
             entries
                 .filter((entry) => entry.meta.role === role)
                 .sort((a, b) => a.meta.order - b.meta.order);
-        const label = (entry: { meta: DiagramMeta; element: ExcalidrawElement }) =>
-            boundText.get(entry.element.id) ?? String(entry.meta.data.label ?? "");
+        const label = (entry: {
+            meta: DiagramMeta;
+            element: ExcalidrawElement;
+        }) =>
+            boundText.get(entry.element.id) ??
+            String(entry.meta.data.label ?? "");
         const titleEntry = byRole("title")[0];
         const title =
             titleEntry && titleEntry.element.type === "text"
@@ -498,8 +549,14 @@ export function readDiagrams(sceneElements: readonly ExcalidrawElement[]) {
         const boxes = new Map<string, Box>();
         const byRoleKey = new Map<string, ExcalidrawElement>();
         for (const entry of entries) {
-            byRoleKey.set(`${entry.meta.role}:${entry.meta.key}`, entry.element);
-            if (entry.meta.role === "node" || entry.meta.role === "participant") {
+            byRoleKey.set(
+                `${entry.meta.role}:${entry.meta.key}`,
+                entry.element,
+            );
+            if (
+                entry.meta.role === "node" ||
+                entry.meta.role === "participant"
+            ) {
                 const { x, y, width, height } = entry.element;
                 boxes.set(entry.meta.key, { x, y, width, height });
             }
@@ -532,7 +589,9 @@ export function readDiagrams(sceneElements: readonly ExcalidrawElement[]) {
                     definedEntries({
                         from: String(entry.meta.data.from),
                         to: String(entry.meta.data.to),
-                        label: labels.get(entry.meta.key) ?? String(entry.meta.data.label),
+                        label:
+                            labels.get(entry.meta.key) ??
+                            String(entry.meta.data.label),
                         kind: entry.meta.data.kind as never,
                     }),
                 );
@@ -582,14 +641,18 @@ export function readDiagrams(sceneElements: readonly ExcalidrawElement[]) {
                 diagramId,
                 title,
                 direction: first.direction,
-                ...(first.diagramType === "architecture" && groups.length ? { groups } : {}),
+                ...(first.diagramType === "architecture" && groups.length
+                    ? { groups }
+                    : {}),
                 nodes,
                 edges,
             }) as GraphSpec;
         }
 
         const contentBoxes = entries
-            .filter((entry) => ["node", "group", "participant"].includes(entry.meta.role))
+            .filter((entry) =>
+                ["node", "group", "participant"].includes(entry.meta.role),
+            )
             .map(({ element }) => ({
                 x: element.x,
                 y: element.y,
