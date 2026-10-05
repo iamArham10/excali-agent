@@ -106,8 +106,20 @@ export function getDiagramSummary(input: unknown): DiagramSummary | null {
               plural(list("messages").length, "message"),
           ]
         : [
-              plural(items.length, "node"),
-              plural(list("edges").length, "edge"),
+              plural(
+                  items.length,
+                  d.type === "er"
+                      ? "entity"
+                      : d.type === "class"
+                        ? "class"
+                        : "node",
+              ),
+              plural(
+                  list("edges").length,
+                  d.type === "er" || d.type === "class"
+                      ? "relationship"
+                      : "edge",
+              ),
               ...(list("groups").length
                   ? [plural(list("groups").length, "group")]
                   : []),
@@ -118,11 +130,12 @@ export function getDiagramSummary(input: unknown): DiagramSummary | null {
         diagramId: typeof d.diagramId === "string" ? d.diagramId : "",
         title: typeof d.title === "string" ? d.title : undefined,
         labels: items
-            .map((item) =>
-                typeof item?.label === "string"
-                    ? item.label.replace(/\n/g, " ")
-                    : "",
-            )
+            .map((item) => {
+                if (typeof item?.label !== "string") return "";
+                // For rich multi-line labels (ER/Class), extract the main name on line 1
+                const firstLine = item.label.split("\n")[0].trim();
+                return firstLine.replace(/\\n/g, " ");
+            })
             .filter(Boolean),
         counts,
     };
