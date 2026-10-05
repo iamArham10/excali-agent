@@ -393,5 +393,71 @@
                 "maxNodes": 5
             }
         }
+    },
+    {
+        "id": "creation-ecommerce-er",
+        "suite": "creation",
+        "input": "Draw an ER diagram for an e-commerce database: User entity has id and email, Order entity has id and user_id, OrderItem has id, order_id, product_id, and Product has id and name. Connect User to Order with a 1:N relationship, and Order to OrderItem with a 1:N relationship.",
+        "difficulty": "medium",
+        "tags": ["er", "database-schema"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "er",
+                "nodes": [
+                    { "label": "User", "kind": "entity" },
+                    { "label": "Order", "kind": "entity" },
+                    { "label": ["OrderItem", "Order Item"], "kind": "weak-entity" },
+                    { "label": "Product", "kind": "entity" }
+                ],
+                "connections": [
+                    { "from": "User", "to": "Order" },
+                    { "from": "Order", "to": ["OrderItem", "Order Item"] }
+                ],
+                "maxNodes": 6
+            }
+        }
+    },
+    {
+        "id": "creation-payment-class-diagram",
+        "suite": "creation",
+        "input": "Draw a UML class diagram for payment processing: an interface PaymentGateway with process() method, a StripeGateway class that implements it, an OrderManager class that uses PaymentGateway, and a PaymentStatus enum.",
+        "difficulty": "medium",
+        "tags": ["class", "uml"],
+        "expected": {
+            "routing": {
+                "requiredTools": ["createDiagram"],
+                "forbiddenTools": [
+                    "updateDiagram",
+                    "deleteDiagram",
+                    "clearCanvas",
+                    "webSearchTool",
+                    "knowledgeSearchTool"
+                ]
+            },
+            "diagram": {
+                "diagramType": "class",
+                "nodes": [
+                    { "label": "PaymentGateway", "kind": "interface" },
+                    { "label": "StripeGateway", "kind": "class" },
+                    { "label": "OrderManager", "kind": "class" },
+                    { "label": "PaymentStatus", "kind": "enum" }
+                ],
+                "connections": [
+                    { "from": "StripeGateway", "to": "PaymentGateway" },
+                    { "from": "OrderManager", "to": "PaymentGateway" }
+                ],
+                "maxNodes": 6
+            }
+        }
     }
 ]

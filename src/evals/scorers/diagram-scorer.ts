@@ -96,7 +96,11 @@ export function diagramScorer({
                         (candidate.kind ??
                             (spec.type === "flowchart"
                                 ? "process"
-                                : "service")) === node.kind,
+                                : spec.type === "er"
+                                  ? "entity"
+                                  : spec.type === "class"
+                                    ? "class"
+                                    : "service")) === node.kind,
                 ));
         check(
             passed,

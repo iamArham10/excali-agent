@@ -1,8 +1,10 @@
 import { z } from "zod";
 import {
     ARCHITECTURE_NODE_KINDS,
+    CLASS_NODE_KINDS,
     COLOR_NAMES,
     DiagramSpecSchema,
+    ER_NODE_KINDS,
     FLOWCHART_NODE_KINDS,
 } from "../shared/schemas/diagram-schema";
 import { TOOL_NAMES } from "../shared/tool-names";
@@ -52,7 +54,12 @@ const routingExpectationSchema = z.object({
 const nodeExpectationSchema = z.object({
     label: labelMatcherSchema,
     kind: z
-        .enum([...ARCHITECTURE_NODE_KINDS, ...FLOWCHART_NODE_KINDS])
+        .enum([
+            ...ARCHITECTURE_NODE_KINDS,
+            ...FLOWCHART_NODE_KINDS,
+            ...ER_NODE_KINDS,
+            ...CLASS_NODE_KINDS,
+        ])
         .optional(),
 });
 
@@ -81,7 +88,7 @@ const groupExpectationSchema = z.object({
 });
 
 const diagramExpectationSchema = z.object({
-    diagramType: z.enum(["architecture", "flowchart", "sequence"]),
+    diagramType: z.enum(["architecture", "flowchart", "sequence", "er", "class"]),
     direction: z.enum(["LR", "TB"]).optional(),
     /** Architecture/flowchart nodes. */
     nodes: z.array(nodeExpectationSchema).default([]),
