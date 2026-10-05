@@ -1,7 +1,7 @@
 // Offline regression checks for the diagram layout engine: `npm test`.
 import assert from "node:assert/strict";
 
-import type { ArchitectureSpec, FlowchartSpec } from "../schemas/diagram-schema";
+import type { ArchitectureSpec, FlowchartSpec, ErSpec, ClassSpec } from "../schemas/diagram-schema";
 import { layoutGraph, layoutSequence, type Box } from "./layout";
 import { validateDiagramSpec } from "./validate";
 
@@ -13,7 +13,7 @@ const contains = (outer: Box, inner: Box) =>
     inner.x + inner.width <= outer.x + outer.width &&
     inner.y + inner.height <= outer.y + outer.height;
 
-async function checkGraph(spec: ArchitectureSpec | FlowchartSpec, name: string) {
+async function checkGraph(spec: ArchitectureSpec | FlowchartSpec | ErSpec | ClassSpec, name: string) {
     assert.deepEqual(validateDiagramSpec(spec).errors, [], `${name}: spec should be valid`);
     const layout = await layoutGraph(spec, { origin: { x: 100, y: 100 } });
 
@@ -186,4 +186,78 @@ const sequence = layoutSequence(
 const [client, server] = sequence.participants;
 assert.ok(server.lifeline.x - client.lifeline.x >= 300, "columns widen to fit message labels");
 
-console.log("Layout checks passed (fixtures, incremental placement, 150 fuzzed hierarchies, sequence).");
+// ER Diagram layout test
+await checkGraph(
+    {
+        type: "er",
+        diagramId: "ecommerce-er",
+        title: "E-Commerce ER Diagram",
+        nodes: [
+            {
+                id: "user",
+                label: "User\n──\nPK id: int\nemail: varchar\nname: varchar",
+                kind: "entity",
+            },
+            {
+                id: "order",
+                label: "Order\n──\nPK id: int\nFK user_id: int\ntotal: decimal\nstatus: varchar",
+                kind: "entity",
+            },
+            {
+                id: "order-item",
+                label: "OrderItem\n──\nPK id: int\nFK order_id: int\nFK product_id: int\nquantity: int",
+                kind: "weak-entity",
+            },
+            {
+                id: "product",
+                label: "Product\n──\nPK id: int\nname: varchar\nprice: decimal",
+                kind: "entity",
+            },
+        ],
+        edges: [
+            { from: "user", to: "order", label: "1:N places" },
+            { from: "order", to: "order-item", label: "1:N contains" },
+            { from: "product", to: "order-item", label: "1:N listed in" },
+        ],
+    },
+    "er-diagram",
+);
+
+// Class Diagram layout test
+await checkGraph(
+    {
+        type: "class",
+        diagramId: "payment-classes",
+        title: "Payment Domain Classes",
+        nodes: [
+            {
+                id: "payment-gateway",
+                label: "PaymentGateway\n──\n+ process(amount: float): bool\n+ refund(id: string): bool",
+                kind: "interface",
+            },
+            {
+                id: "stripe-gateway",
+                label: "StripeGateway\n──\n- apiKey: string\n──\n+ process(amount: float): bool\n+ refund(id: string): bool",
+                kind: "class",
+            },
+            {
+                id: "order-mgr",
+                label: "OrderManager\n──\n- gateway: PaymentGateway\n──\n+ checkout(orderId: string): void",
+                kind: "class",
+            },
+            {
+                id: "payment-status",
+                label: "PaymentStatus\n──\nPENDING\nCOMPLETED\nFAILED",
+                kind: "enum",
+            },
+        ],
+        edges: [
+            { from: "stripe-gateway", to: "payment-gateway", label: "implements", style: "dashed" },
+            { from: "order-mgr", to: "payment-gateway", label: "uses", style: "dashed" },
+            { from: "order-mgr", to: "payment-status", label: "references" },
+        ],
+    },
+    "class-diagram",
+);
+
+console.log("Layout checks passed (fixtures, incremental placement, 150 fuzzed hierarchies, sequence, ER, class).");

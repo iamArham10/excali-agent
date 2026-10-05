@@ -141,8 +141,12 @@ export async function layoutGraph(
     options: GraphLayoutOptions,
 ): Promise<GraphLayout> {
     const direction =
-        spec.direction ?? (spec.type === "architecture" ? "LR" : "TB");
-    const fallbackKind = spec.type === "architecture" ? "service" : "process";
+        spec.direction ?? (spec.type === "architecture" || spec.type === "er" ? "LR" : "TB");
+    const fallbackKind =
+        spec.type === "architecture" ? "service"
+        : spec.type === "er" ? "entity"
+        : spec.type === "class" ? "class"
+        : "process";
     const pinned = options.pinned ?? new Map<string, Box>();
     const warnings: string[] = [];
 

@@ -62,7 +62,10 @@ export function sizeForLabel(label: string, shape: ShapeType, fontSize: number) 
         return { width, height: Math.max(70, roundUp(count * lh * 1.45 + 36)) };
     }
 
-    const width = clamp(roundUp(textWidth + 50), 160, 280);
-    const count = wrappedLineCount(lines, fontSize, width - 40);
-    return { width, height: Math.max(70, roundUp(count * lh + 40)) };
+    const isDivider = (l: string) => /^[─\-=_]{2,}$/.test(l.trim());
+    const contentLines = lines.filter((l) => !isDivider(l));
+    const width = clamp(roundUp(textWidth + 50), 160, 360);
+    const count = wrappedLineCount(contentLines.length ? contentLines : lines, fontSize, width - 40);
+    const minHeight = lines.length > 1 ? Math.max(80, 36 + contentLines.length * 20 + 20) : 70;
+    return { width, height: Math.max(minHeight, roundUp(count * lh + 40)) };
 }
