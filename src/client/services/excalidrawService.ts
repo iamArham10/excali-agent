@@ -201,7 +201,13 @@ export class ExcaliDrawService {
         }
         const groups =
             spec.type === "architecture" ? (spec.groups?.length ?? 0) : 0;
-        return `${spec.nodes.length} nodes, ${spec.edges?.length ?? 0} edges${groups ? `, ${groups} groups` : ""}`;
+        const nodeName =
+            spec.type === "er" ? "entities"
+            : spec.type === "class" ? "classes"
+            : "nodes";
+        const edgeName =
+            spec.type === "er" || spec.type === "class" ? "relationships" : "edges";
+        return `${spec.nodes.length} ${nodeName}, ${spec.edges?.length ?? 0} ${edgeName}${groups ? `, ${groups} groups` : ""}`;
     }
 
     /** Top-left position to the right of everything already on the canvas. */
@@ -244,7 +250,10 @@ export class ExcaliDrawService {
 
         if (existing && existing.spec.type !== "sequence") {
             const fallbackKind =
-                spec.type === "architecture" ? "service" : "process";
+                spec.type === "architecture" ? "service"
+                : spec.type === "er" ? "entity"
+                : spec.type === "class" ? "class"
+                : "process";
             const oldNodes = new Map(
                 existing.spec.nodes.map((node) => [node.id, node]),
             );

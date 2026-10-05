@@ -35,6 +35,9 @@ export type DiagramRole =
     | "title"
     | "group"
     | "node"
+    | "node-header"
+    | "node-divider"
+    | "node-body"
     | "edge"
     | "participant"
     | "lifeline"
@@ -181,7 +184,7 @@ export function renderGraph(
 ): RenderResult {
     const { diagramId } = spec;
     const direction =
-        spec.direction ?? (spec.type === "architecture" ? "LR" : "TB");
+        spec.direction ?? (spec.type === "architecture" || spec.type === "er" ? "LR" : "TB");
     const skeletons: Skeleton[] = [];
     const routeLater: string[] = [];
     const exactPoints: RenderResult["exactPoints"] = new Map();
@@ -220,33 +223,279 @@ export function renderGraph(
     for (const node of layout.nodes) {
         nodeBoxes.set(node.id, node.box);
         const colors = nodeColors(node.style, node.color);
-        skeletons.push({
-            id: elementId(diagramId, "node", node.id),
-            type: node.style.shape,
-            ...node.box,
-            strokeColor: colors.stroke,
-            backgroundColor: colors.fill,
-            fillStyle: "solid",
-            strokeStyle: node.style.strokeStyle ?? "solid",
-            strokeWidth: node.style.strokeWidth ?? 1,
-            roundness: node.style.shape === "rectangle" ? { type: 3 } : null,
-            ...clean,
-            ...(options.preservedStyles?.get(node.id) ?? {}),
-            label: {
-                text: node.label,
-                fontSize: NODE_FONT_SIZE,
-                fontFamily: FONT_FAMILY_CLEAN,
-                strokeColor: INK,
-            },
-            customData: {
-                [META_KEY]: meta(spec, "node", node.id, node.order, {
-                    label: node.label,
-                    kind: node.kind,
-                    group: node.group,
-                    color: node.color,
-                }),
-            },
-        });
+        const isTable =
+            (spec.type === "er" || spec.type === "class") &&
+            node.label.includes("\n");
+
+        if (isTable) {
+            const tableGroupId = `${diagramId}:table:${node.id}`;
+            const rawLines = node.label
+                .split("\n")
+                .map((l) => l.trim())
+                .filter(Boolean);
+            const isDivider = (line: string) => /^[─\-=_]{2,}$/.test(line);
+
+            const sections: string[][] = [];
+            let currentSec: string[] = [];
+            for (const line of rawLines) {
+                if (isDivider(line)) {
+                    if (currentSec.length > 0) {
+                        sections.push(currentSec);
+                        currentSec = [];
+                    }
+                } else {
+                    currentSec.push(line);
+                }
+            }
+            if (currentSec.length > 0) sections.push(currentSec);
+
+            let headerTitle = sections[0]?.[0] ?? rawLines[0] ?? node.label;
+            let bodySections = sections.slice(1);
+            if (bodySections.length === 0 && rawLines.length > 1) {
+                headerTitle = rawLines[0];
+                bodySections = [rawLines.slice(1)];
+            }
+
+            const headerHeight = 36;
+
+            // 1. Outer table container (so edges bind to the full card)
+            skeletons.push({
+                id: elementId(diagramId, "node", node.id),
+                type: "rectangle",
+                ...node.box,
+                strokeColor: colors.stroke,
+                backgroundColor: "#ffffff",
+                fillStyle: "solid",
+                strokeStyle: node.style.strokeStyle ?? "solid",
+                strokeWidth: node.style.strokeWidth ?? 2,
+                roundness: { type: 3 },
+                groupIds: [tableGroupId],
+                ...clean,
+                ...(options.preservedStyles?.get(node.id) ?? {}),
+                customData: {
+                    [META_KEY]: meta(spec, "node", node.id, node.order, {
+                        label: node.label,
+                        kind: node.kind,
+                        group: node.group,
+                        color: node.color,
+                    }),
+                },
+            });
+
+            // 2. Header banner with entity/class name
+            skeletons.push({
+                id: elementId(diagramId, "node-header", node.id),
+                type: "rectangle",
+                x: node.box.x,
+                y: node.box.y,
+                width: node.box.width,
+                height: headerHeight,
+                strokeColor: colors.stroke,
+                backgroundColor: colors.fill,
+                fillStyle: "solid",
+                strokeStyle: node.style.strokeStyle ?? "solid",
+                strokeWidth: 1,
+                roundness: { type: 3 },
+                groupIds: [tableGroupId],
+                ...clean,
+                label: {
+                    text: headerTitle,
+                    fontSize: 15,
+                    fontFamily: FONT_FAMILY_CLEAN,
+                    strokeColor: INK,
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                },
+                customData: {
+                    [META_KEY]: meta(spec, "node-header", node.id, node.order, {
+                        title: headerTitle,
+                    }),
+                },
+            });
+
+            // 3. Divider line directly under header
+            skeletons.push({
+                id: elementId(diagramId, "node-divider", `${node.id}:0`),
+                type: "line",
+                x: node.box.x,
+                y: node.box.y + headerHeight,
+                points: [
+                    [0, 0],
+                    [node.box.width, 0],
+                ],
+                strokeColor: colors.stroke,
+                strokeWidth: 1,
+                groupIds: [tableGroupId],
+                ...clean,
+                customData: {
+                    [META_KEY]: meta(
+                        spec,
+                        "node-divider",
+                        `${node.id}:0`,
+                        node.order,
+                        {},
+                    ),
+                },
+            });
+
+            // 4. Body sections (attributes / methods)
+            let curY = node.box.y + headerHeight;
+            if (spec.type === "er") {
+                const attrs = bodySections[0] ?? [];
+                const rowHeight = 24;
+                attrs.forEach((attrLine, rIdx) => {
+                    const rowTop = curY + rIdx * rowHeight;
+                    if (rIdx > 0) {
+                        skeletons.push({
+                            id: elementId(
+                                diagramId,
+                                "node-divider",
+                                `${node.id}:r${rIdx}`,
+                            ),
+                            type: "line",
+                            x: node.box.x,
+                            y: rowTop,
+                            points: [
+                                [0, 0],
+                                [node.box.width, 0],
+                            ],
+                            strokeColor: "#e9ecef",
+                            strokeWidth: 1,
+                            groupIds: [tableGroupId],
+                            ...clean,
+                            customData: {
+                                [META_KEY]: meta(
+                                    spec,
+                                    "node-divider",
+                                    `${node.id}:r${rIdx}`,
+                                    node.order,
+                                    {},
+                                ),
+                            },
+                        });
+                    }
+
+                    skeletons.push({
+                        id: elementId(
+                            diagramId,
+                            "node-body",
+                            `${node.id}:${rIdx}`,
+                        ),
+                        type: "text",
+                        x: node.box.x + 12,
+                        y: rowTop + 4,
+                        text: attrLine,
+                        fontSize: 13,
+                        fontFamily: FONT_FAMILY_CLEAN,
+                        strokeColor: INK,
+                        textAlign: "left",
+                        groupIds: [tableGroupId],
+                        ...clean,
+                        customData: {
+                            [META_KEY]: meta(
+                                spec,
+                                "node-body",
+                                `${node.id}:${rIdx}`,
+                                node.order,
+                                {},
+                            ),
+                        },
+                    });
+                });
+            } else {
+                curY += 8;
+                bodySections.forEach((section, sIdx) => {
+                    if (sIdx > 0) {
+                        skeletons.push({
+                            id: elementId(
+                                diagramId,
+                                "node-divider",
+                                `${node.id}:${sIdx}`,
+                            ),
+                            type: "line",
+                            x: node.box.x,
+                            y: curY - 3,
+                            points: [
+                                [0, 0],
+                                [node.box.width, 0],
+                            ],
+                            strokeColor: colors.stroke,
+                            strokeWidth: 1,
+                            groupIds: [tableGroupId],
+                            ...clean,
+                            customData: {
+                                [META_KEY]: meta(
+                                    spec,
+                                    "node-divider",
+                                    `${node.id}:${sIdx}`,
+                                    node.order,
+                                    {},
+                                ),
+                            },
+                        });
+                        curY += 6;
+                    }
+
+                    const text = section.join("\n");
+                    skeletons.push({
+                        id: elementId(
+                            diagramId,
+                            "node-body",
+                            `${node.id}:${sIdx}`,
+                        ),
+                        type: "text",
+                        x: node.box.x + 14,
+                        y: curY,
+                        text,
+                        fontSize: 13,
+                        fontFamily: FONT_FAMILY_CLEAN,
+                        strokeColor: INK,
+                        textAlign: "left",
+                        groupIds: [tableGroupId],
+                        ...clean,
+                        customData: {
+                            [META_KEY]: meta(
+                                spec,
+                                "node-body",
+                                `${node.id}:${sIdx}`,
+                                node.order,
+                                {},
+                            ),
+                        },
+                    });
+                    curY += section.length * 19 + 6;
+                });
+            }
+        } else {
+            skeletons.push({
+                id: elementId(diagramId, "node", node.id),
+                type: node.style.shape,
+                ...node.box,
+                strokeColor: colors.stroke,
+                backgroundColor: colors.fill,
+                fillStyle: "solid",
+                strokeStyle: node.style.strokeStyle ?? "solid",
+                strokeWidth: node.style.strokeWidth ?? 1,
+                roundness:
+                    node.style.shape === "rectangle" ? { type: 3 } : null,
+                ...clean,
+                ...(options.preservedStyles?.get(node.id) ?? {}),
+                label: {
+                    text: node.label,
+                    fontSize: NODE_FONT_SIZE,
+                    fontFamily: FONT_FAMILY_CLEAN,
+                    strokeColor: INK,
+                },
+                customData: {
+                    [META_KEY]: meta(spec, "node", node.id, node.order, {
+                        label: node.label,
+                        kind: node.kind,
+                        group: node.group,
+                        color: node.color,
+                    }),
+                },
+            });
+        }
     }
 
     for (const edge of layout.edges) {
@@ -278,7 +527,97 @@ export function renderGraph(
             routeLater.push(id);
         }
 
-        const arrow = edge.arrow ?? "forward";
+        const rawLabel = (edge.label ?? "").toLowerCase();
+        let startArrowhead: string | null = null;
+        let endArrowhead: string | null = "arrow";
+        let edgeStroke: "solid" | "dashed" =
+            edge.style === "dashed" ? "dashed" : "solid";
+
+        if (spec.type === "er") {
+            if (edge.arrow === "none") {
+                startArrowhead = null;
+                endArrowhead = null;
+            } else if (edge.arrow === "both") {
+                startArrowhead = "crowfoot_many";
+                endArrowhead = "crowfoot_many";
+            } else if (
+                /\b1\s*:\s*[n*m]\b|\bone\s+to\s+many\b|\b1\s*\.\.\s*[n*m]\b/i.test(
+                    rawLabel,
+                )
+            ) {
+                startArrowhead = "crowfoot_one";
+                endArrowhead = "crowfoot_many";
+            } else if (
+                /\b[n*m]\s*:\s*1\b|\bmany\s+to\s+one\b|\b[n*m]\s*\.\.\s*1\b/i.test(
+                    rawLabel,
+                )
+            ) {
+                startArrowhead = "crowfoot_many";
+                endArrowhead = "crowfoot_one";
+            } else if (
+                /\b[n*m]\s*:\s*[n*m]\b|\bmany\s+to\s+many\b/i.test(rawLabel)
+            ) {
+                startArrowhead = "crowfoot_many";
+                endArrowhead = "crowfoot_many";
+            } else if (
+                /\b1\s*:\s*1\b|\bone\s+to\s+one\b|\b1\s*\.\.\s*1\b/i.test(
+                    rawLabel,
+                )
+            ) {
+                startArrowhead = "crowfoot_one";
+                endArrowhead = "crowfoot_one";
+            } else if (/\b0\s*\.\.\s*1\b|\bzero\s+or\s+one\b/i.test(rawLabel)) {
+                startArrowhead = "circle";
+                endArrowhead = "crowfoot_one";
+            } else if (
+                /\b0\s*\.\.\s*[n*m]\b|\bzero\s+or\s+many\b/i.test(rawLabel)
+            ) {
+                startArrowhead = "circle";
+                endArrowhead = "crowfoot_many";
+            } else {
+                // Default ER relationship: 1 (source/parent) to N (target/child)
+                startArrowhead = "crowfoot_one";
+                endArrowhead = "crowfoot_many";
+            }
+        } else if (spec.type === "class") {
+            if (edge.arrow === "none") {
+                startArrowhead = null;
+                endArrowhead = null;
+            } else if (
+                /\bextends\b|\binherits\b|\bgeneralizes?\b/i.test(rawLabel)
+            ) {
+                startArrowhead = null;
+                endArrowhead = "triangle";
+                edgeStroke = "solid";
+            } else if (/\bimplements\b|\brealizes?\b/i.test(rawLabel)) {
+                startArrowhead = null;
+                endArrowhead = "triangle";
+                edgeStroke = "dashed";
+            } else if (
+                /\bcomposition\b|\bcomposes?\b|\bcomposite\b/i.test(rawLabel)
+            ) {
+                startArrowhead = "diamond";
+                endArrowhead = null;
+            } else if (/\baggregation\b|\baggregates?\b/i.test(rawLabel)) {
+                startArrowhead = "diamond_outline";
+                endArrowhead = null;
+            } else if (
+                /\buses\b|\bdepends\b|\bdependency\b/i.test(rawLabel)
+            ) {
+                startArrowhead = null;
+                endArrowhead = "arrow";
+                edgeStroke = "dashed";
+            } else {
+                const arrow = edge.arrow ?? "forward";
+                startArrowhead = arrow === "both" ? "arrow" : null;
+                endArrowhead = arrow === "none" ? null : "arrow";
+            }
+        } else {
+            const arrow = edge.arrow ?? "forward";
+            startArrowhead = arrow === "both" ? "arrow" : null;
+            endArrowhead = arrow === "none" ? null : "arrow";
+        }
+
         skeletons.push({
             id,
             type: "arrow",
@@ -290,11 +629,11 @@ export function renderGraph(
             roundness: null,
             strokeColor: EDGE_COLOR,
             strokeWidth: 2,
-            strokeStyle: edge.style === "dashed" ? "dashed" : "solid",
+            strokeStyle: edgeStroke,
             ...clean,
             ...(options.preservedStyles?.get(`edge:${edge.id}`) ?? {}),
-            startArrowhead: arrow === "both" ? "arrow" : null,
-            endArrowhead: arrow === "none" ? null : "arrow",
+            startArrowhead,
+            endArrowhead,
             start: { id: elementId(diagramId, "node", edge.from) },
             end: { id: elementId(diagramId, "node", edge.to) },
             ...(edge.label
@@ -537,9 +876,34 @@ export function readDiagrams(sceneElements: readonly ExcalidrawElement[]) {
         const label = (entry: {
             meta: DiagramMeta;
             element: ExcalidrawElement;
-        }) =>
-            boundText.get(entry.element.id) ??
-            String(entry.meta.data.label ?? "");
+        }) => {
+            const bound = boundText.get(entry.element.id);
+            if (bound) return bound;
+
+            const headerEntry = byRole("node-header").find(
+                (h) => h.meta.key === entry.meta.key,
+            );
+            const bodyEntries = byRole("node-body")
+                .filter((b) => b.meta.key.startsWith(`${entry.meta.key}:`))
+                .sort((a, b) => a.meta.order - b.meta.order);
+
+            if (headerEntry && bodyEntries.length > 0) {
+                const headerText =
+                    boundText.get(headerEntry.element.id) ??
+                    String(headerEntry.meta.data.title ?? "");
+                const bodyParts = bodyEntries.map(
+                    (b) =>
+                        (b.element as ExcalidrawTextElement).originalText ||
+                        (b.element as ExcalidrawTextElement).text ||
+                        "",
+                );
+                if (headerText && bodyParts.some(Boolean)) {
+                    return `${headerText}\n──\n${bodyParts.join("\n──\n")}`;
+                }
+            }
+
+            return String(entry.meta.data.label ?? "");
+        };
         const titleEntry = byRole("title")[0];
         const title =
             titleEntry && titleEntry.element.type === "text"
