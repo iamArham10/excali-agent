@@ -42,6 +42,14 @@ const NODE_STYLES: Record<string, NodeStyle> = {
     subprocess: { shape: "rectangle", color: "teal", strokeWidth: 2 },
     // sequence
     actor: { shape: "rectangle", color: "purple" },
+    // er
+    entity: { shape: "rectangle", color: "green", strokeWidth: 2 },
+    "weak-entity": { shape: "rectangle", color: "green", strokeStyle: "dashed", strokeWidth: 2 },
+    // class
+    class: { shape: "rectangle", color: "blue" },
+    abstract: { shape: "rectangle", color: "blue", strokeStyle: "dashed" },
+    interface: { shape: "rectangle", color: "teal", strokeStyle: "dashed" },
+    enum: { shape: "rectangle", color: "purple" },
 };
 
 export function nodeStyle(kind: string | undefined, fallback: string): NodeStyle {

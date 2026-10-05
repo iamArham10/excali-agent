@@ -99,6 +99,26 @@ export const SEQUENCE_PARTICIPANT_KINDS = [
     "external",
 ] as const;
 
+export const ER_NODE_KINDS = [
+    "entity",
+    "weak-entity",
+] as const;
+
+export const CLASS_NODE_KINDS = [
+    "class",
+    "abstract",
+    "interface",
+    "enum",
+] as const;
+
+const richLabelSchema = z
+    .string()
+    .min(1)
+    .max(300)
+    .describe(
+        "Multi-line label. First line is the name. Use \\n── to add a divider, then \\n-separated attributes/properties/methods. E.g. 'User\\n──\\nPK id: int\\nemail: varchar'.",
+    );
+
 const architectureSpec = z.object({
     type: z.literal("architecture"),
     diagramId: idSchema.describe("Unique id of this diagram on the canvas."),
@@ -199,10 +219,72 @@ const sequenceSpec = z.object({
         .describe("Messages in chronological order, top to bottom."),
 });
 
+const erSpec = z.object({
+    type: z.literal("er"),
+    diagramId: idSchema.describe("Unique id of this diagram on the canvas."),
+    title: titleSchema,
+    direction: directionSchema.describe("Defaults to LR."),
+    nodes: z
+        .array(
+            z.object({
+                id: idSchema,
+                label: richLabelSchema.describe(
+                    "Entity name on the first line. Use \\n── as a divider, then list attributes one per line. Mark primary keys with 'PK' and foreign keys with 'FK'. E.g. 'User\\n──\\nPK id: int\\nemail: varchar\\nFK role_id: int'.",
+                ),
+                kind: z
+                    .enum(ER_NODE_KINDS)
+                    .optional()
+                    .describe(
+                        "entity (default) = standard entity, weak-entity = depends on another entity for identification.",
+                    ),
+                color: colorSchema,
+            }),
+        )
+        .min(1),
+    edges: z
+        .array(z.object(edgeBase))
+        .optional()
+        .describe(
+            "Relationships between entities. Use the label for cardinality and relationship name, e.g. '1:N has', 'N:M enrolled in'.",
+        ),
+});
+
+const classSpec = z.object({
+    type: z.literal("class"),
+    diagramId: idSchema.describe("Unique id of this diagram on the canvas."),
+    title: titleSchema,
+    direction: directionSchema.describe("Defaults to TB."),
+    nodes: z
+        .array(
+            z.object({
+                id: idSchema,
+                label: richLabelSchema.describe(
+                    "Class name on the first line. Use \\n── as a divider between sections. List properties then methods. Prefix with + (public), - (private), or # (protected). E.g. 'UserService\\n──\\n- users: User[]\\n- db: Database\\n──\\n+ getUser(id): User\\n+ save(user): void'.",
+                ),
+                kind: z
+                    .enum(CLASS_NODE_KINDS)
+                    .optional()
+                    .describe(
+                        "class (default), abstract = abstract class (dashed border), interface = interface (dashed border), enum = enumeration.",
+                    ),
+                color: colorSchema,
+            }),
+        )
+        .min(1),
+    edges: z
+        .array(z.object(edgeBase))
+        .optional()
+        .describe(
+            "Relationships between classes. Use label for the relationship: 'extends', 'implements', 'has', 'uses'. Use dashed style for dependency or implementation.",
+        ),
+});
+
 export const DiagramSpecSchema = z.discriminatedUnion("type", [
     architectureSpec,
     flowchartSpec,
     sequenceSpec,
+    erSpec,
+    classSpec,
 ]);
 
 export const CreateDiagramToolSchema = z.object({
@@ -229,7 +311,9 @@ export type DiagramSpec = z.infer<typeof DiagramSpecSchema>;
 export type ArchitectureSpec = z.infer<typeof architectureSpec>;
 export type FlowchartSpec = z.infer<typeof flowchartSpec>;
 export type SequenceSpec = z.infer<typeof sequenceSpec>;
-export type GraphSpec = ArchitectureSpec | FlowchartSpec;
+export type ErSpec = z.infer<typeof erSpec>;
+export type ClassSpec = z.infer<typeof classSpec>;
+export type GraphSpec = ArchitectureSpec | FlowchartSpec | ErSpec | ClassSpec;
 export type EdgeSpec = GraphSpec["edges"] extends (infer E)[] | undefined ? E : never;
 export type ColorName = (typeof COLOR_NAMES)[number];
 export type CreateDiagramInput = z.infer<typeof CreateDiagramToolSchema>;
