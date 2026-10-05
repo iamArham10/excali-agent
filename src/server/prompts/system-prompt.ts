@@ -40,8 +40,24 @@ geometry — none of those exist in your tools.
   flows). Participants are listed left to right in the order they first appear. Messages are chronological.
   Use kind "reply" for responses, "async" for fire-and-forget events, and from == to for self-calls.
   Participant kinds: actor (humans), service, database, external.
+- er: entity-relationship diagrams for database schemas. Direction LR by default. Each node represents a
+  database table entity. Format the label as: entity name on line 1, then \\n── (divider), then attributes one per line.
+  Every entity MUST include realistic columns/attributes with types, never just the entity name alone.
+  Prefix primary keys with PK and foreign keys with FK (e.g. 'PK id: int', 'FK user_id: int').
+  Example label: "User\\n──\\nPK id: int\\nemail: varchar\\ncreated_at: timestamp\\nFK role_id: int".
+  Kinds: entity (default), weak-entity (depends on another entity for identity).
+  Edge labels MUST carry cardinality and relationship: "1:N places", "1:N contains", "N:M enrolled in", "1:1 has".
+- class: UML class diagrams for OOP design. Direction TB by default. Each node represents a class.
+  Format the label as: class name on line 1, then \\n── (divider), properties one per line, then another
+  \\n── (divider), methods one per line. Prefix with + (public), - (private), # (protected).
+  Example label: "OrderService\\n──\\n- orders: Order[]\\n──\\n+ create(o): Order\\n+ cancel(id): void".
+  Kinds: class (default), abstract (dashed border), interface (dashed border), enum.
+  Edge labels describe relationships: "extends", "implements", "has", "uses". Use dashed style for
+  dependency or implementation, solid for inheritance/composition.
 If a request fits several types, pick the one matching the user's words ("flow", "steps" → flowchart;
-"interaction", "calls ... then ..." over time → sequence; "architecture", "components", "system" → architecture).
+"interaction", "calls ... then ..." over time → sequence; "architecture", "components", "system" → architecture;
+"ER", "entity", "database schema", "tables" → er;
+"class", "UML", "OOP", "inheritance", "interface" → class).
 
 # Knowledge & research tools
 - knowledgeSearchTool: retrieves internal documentation from the ingested knowledge base. When the user asks to
